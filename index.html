@@ -420,10 +420,9 @@
     @media(max-width:520px){.ops-panel{padding:.85rem;border-radius:18px}.ops-head{display:block}.ops-actions{margin-top:.75rem}.ops-btn{flex:1}.ops-kpis{gap:.5rem}.ops-kpi{padding:.75rem}.ops-kpi strong{font-size:1.25rem}.ops-tools{grid-template-columns:1fr}.ops-tools input{grid-column:auto}.manage-form{grid-template-columns:1fr}.manage-field.full{grid-column:auto}.manage-head,.manage-body{padding:1rem}.manage-foot{padding:.85rem}}
     @media print{.ops-panel,.manage-modal,.list-pagination,.ops-actions{display:none!important}}
 
-    /* Public deployment: staff management must never be offered from GitHub. */
-    body.cloud-public .ops-panel, body.cloud-public .list-act, body.cloud-public .work-status-control {display:none!important}
-    body.cloud-public #listBox,body.cloud-public #listPagination{display:none!important}
-    </style>
+    /* Public mode: original charts, filters, pagination, presentation retained. */
+.ops-actions,.list-act,.work-status-select,.manage-modal,.up-row{display:none!important}
+</style>
 </head>
 <body>
 
@@ -547,7 +546,7 @@
                 <p class="loc-hint">พิกัดจะแสดงในรูปแบบ ละติจูด, ลองจิจูด · กดเพื่อเปิดแผนที่</p>
             </div>
             <div class="f-group">
-                <label>แนบรูปภาพ (อยู่ระหว่างพัฒนา — ยังส่งไม่ได้)</label>
+                <label>แนบรูปภาพ (ยังไม่เปิดใช้งาน)</label><p class="loc-hint">ขณะนี้ระบบรับข้อความและพิกัดได้แล้ว การส่งรูปภาพไป Google Drive จะเปิดใช้เมื่อจัดการสิทธิ์และพื้นที่เก็บไฟล์เสร็จ</p>
                 <div class="up-row">
                     <button type="button" class="up-btn cam" id="btnCam">
                         <i class="fa-solid fa-camera"></i> ถ่ายรูป
@@ -570,8 +569,8 @@
             </div>
             <div class="ticket-preview" id="ticketPreview" aria-live="polite">
                 <span class="ticket-preview-label"><i class="fa-solid fa-ticket"></i> หมายเลขรับเรื่อง</span>
-                <strong id="ticketPreviewNumber">ระบบจะออกเลขรับเรื่องหลังบันทึกสำเร็จ</strong>
-                <small id="ticketPreviewHint">เลขรับเรื่องจริงออกโดย Google Sheets เท่านั้น</small>
+                <strong id="ticketPreviewNumber">เลือกประเภทเรื่องเพื่อแสดงหมายเลข</strong>
+                <small id="ticketPreviewHint">หมายเลขจะแสดงตามประเภทที่เลือก</small>
             </div>
             <div class="btn-row">
                 <button type="button" class="btn btn-back" id="btnBack"><i class="fa-solid fa-arrow-left"></i> กลับ</button>
@@ -584,7 +583,7 @@
 
     <section class="ops-panel" aria-label="ศูนย์ควบคุมการจัดการเรื่อง">
       <div class="ops-head">
-        <div><span class="eyebrow">OPERATIONS & SERVICE QUALITY</span><h2><i class="fa-solid fa-gauge-high" style="color:#2563eb"></i> ศูนย์ควบคุมงานและรายงานผล</h2><p>ค้นหา ติดตาม SLA ตรวจสอบประวัติ และส่งออกรายงาน</p></div>
+        <div><span class="eyebrow">OPERATIONS & SERVICE QUALITY</span><h2><i class="fa-solid fa-gauge-high" style="color:#2563eb"></i> ภาพรวมการดำเนินงานและตัวกรองข้อมูล</h2><p>ข้อมูลสาธารณะสำหรับติดตามสถานะและกรองรายการ · การมอบหมายงานใช้ระบบเจ้าหน้าที่แยกต่างหาก</p></div>
         <div class="ops-actions">
           <button class="ops-btn primary" type="button" onclick="exportCSV()"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
           <button class="ops-btn" type="button" onclick="downloadBackup()"><i class="fa-solid fa-download"></i> สำรองข้อมูล</button>
@@ -599,9 +598,9 @@
         <article class="ops-kpi"><span><i class="fa-solid fa-user-check"></i> มีผู้รับผิดชอบ</span><strong id="assignedCount">0</strong><small>รายการที่ระบุผู้รับผิดชอบแล้ว</small></article>
         <article class="ops-kpi"><span><i class="fa-solid fa-calendar-check"></i> ปิดงานเดือนนี้</span><strong id="closedThisMonth">0</strong><small>ปิดงานสำเร็จในเดือนปัจจุบัน</small></article>
       </div>
-      <div class="ops-subtitle">ค้นหาและกรองรายการ</div>
+      <div class="ops-subtitle">ค้นหาและกรองรายการ (ข้อมูลสาธารณะ ไม่แสดงชื่อ/เบอร์/รายละเอียดส่วนบุคคล)</div>
       <div class="ops-tools">
-        <input id="searchRecords" type="search" placeholder="ค้นหาเลขรับเรื่อง หัวข้อ รายละเอียด สถานที่ หรือผู้รับผิดชอบ..." aria-label="ค้นหารายการ">
+        <input id="searchRecords" type="search" placeholder="ค้นหาเลขรับเรื่อง..." aria-label="ค้นหารายการ">
         <select id="filterStatus" aria-label="กรองตามสถานะ"><option value="all">ทุกสถานะ</option><option value="review">🟡 รอตรวจสอบ</option><option value="progress">🔴 กำลังดำเนินการ</option><option value="closed">🟢 ปิดงานสำเร็จ</option><option value="overdue">⏰ เกินกำหนด</option></select>
         <select id="filterCategory" aria-label="กรองตามหมวดหมู่"><option value="all">ทุกหมวดหมู่</option></select>
         <select id="filterType" aria-label="กรองตามประเภท"><option value="all">ทุกประเภท</option><option value="p">แจ้งปัญหา</option><option value="g">ชื่นชม</option></select>
@@ -612,7 +611,7 @@
       <div class="hotspot-list" id="locationHotspots"><span class="hotspot">ยังไม่มีข้อมูลสถานที่</span></div>
       <div class="ops-subtitle">ประวัติการดำเนินการล่าสุด</div>
       <div class="audit-list" id="auditList"><div class="audit-row"><span>ยังไม่มีประวัติการเปลี่ยนแปลง</span></div></div>
-      <div class="ops-note"><i class="fa-solid fa-cloud"></i> <strong>สถานะข้อมูล:</strong> <span id="cloudSyncStatus">ยังไม่ได้ตั้งค่าฐานข้อมูลกลาง — ข้อมูลยังอยู่ในเครื่องนี้</span><br><button class="ops-btn" type="button" onclick="syncNow()">☁️ ซิงก์ข้อมูลกับฐานข้อมูลกลาง</button></div>
+      <div class="ops-note"><i class="fa-solid fa-cloud"></i> <strong>สถานะข้อมูล:</strong> <span id="cloudSyncStatus">กำลังเชื่อมต่อ Google Sheets</span><br><button class="ops-btn" type="button" onclick="syncNow()">☁️ โหลดข้อมูลล่าสุดจาก Google Sheets</button></div>
     </section>
 
     <h3 class="sec-title"><i class="fa-solid fa-table-list"></i> รายการที่ส่ง</h3>
@@ -727,10 +726,9 @@ const cats = {
 };
 
 // ใส่ URL ของ Google Apps Script Web App หลัง Deploy แล้ว
-const DM_API_URL = 'https://script.google.com/macros/s/AKfycbwkvwHQbYb-8b4mq43WFZlBGCRo-QK5kbMRuDlxuOGqpSJSlVNABD9L4d9a6vhPKJDH0Q/exec'; // วาง URL Web App /exec หลัง Deploy (เว้นว่างไว้ก่อน)
-document.body.classList.add('cloud-public'); // Public website never exposes staff tools or local records
-let data = []; // Public mode: local legacy data is never displayed or sent to the server
-let activityLog = []; // Legacy data stays untouched in browser storage
+const DM_API_URL = 'https://script.google.com/macros/s/AKfycbwkvwHQbYb-8b4mq43WFZlBGCRo-QK5kbMRuDlxuOGqpSJSlVNABD9L4d9a6vhPKJDH0Q/exec'; // ตัวอย่าง: https://script.google.com/macros/s/DEPLOYMENT_ID/exec
+let data = []; // Public records are loaded from Sheets; never merge browser data
+let activityLog = [];
 let cloudInitialized = false;
 let syncTimer = null;
 let syncInProgress = false;
@@ -740,93 +738,69 @@ function setCloudStatus(message, good=false){
   const el=document.getElementById('cloudSyncStatus');
   if(el){el.textContent=message;el.style.color=good?'#16803c':'';}
 }
-function saveLocalData(){
-  // Intentionally no-op on public website: avoid writing legacy local records.
-}
-function saveAllData(){
-  saveLocalData();
-  // No snapshot writes: public users must never overwrite the central database.
-  setCloudStatus(DM_API_URL?'ข้อมูลในเครื่องไม่ใช่ฐานกลาง — ส่งเรื่องใหม่ผ่านแบบฟอร์มเท่านั้น':'ยังไม่ได้ตั้งค่า API — ข้อมูลอยู่ในเบราว์เซอร์เครื่องนี้');
-}
-// Public JSONP: read-only aggregate stats / one-time receipt only.
-function dmJsonp(action,params={}){
-  return new Promise((resolve,reject)=>{
-    if(!DM_API_URL)return reject(Error('ยังไม่ได้ตั้งค่า Apps Script URL'));
-    const callback='__dmPublic_'+Date.now()+'_'+Math.floor(Math.random()*100000);
-    const script=document.createElement('script');
-    const timer=setTimeout(()=>{cleanup();reject(Error('เชื่อมต่อหมดเวลา'));},15000);
-    function cleanup(){clearTimeout(timer);delete window[callback];script.remove();}
-    window[callback]=value=>{cleanup();resolve(value);};
-    script.onerror=()=>{cleanup();reject(Error('อ่านข้อมูลจาก Apps Script ไม่ได้'));};
-    const query=new URLSearchParams({action,callback,...params,_:String(Date.now())});
-    script.src=DM_API_URL+(DM_API_URL.includes('?')?'&':'?')+query;
-    document.head.appendChild(script);
-  });
-}
-async function dmRefreshDashboard(){
-  if(!DM_API_URL)return;
-  const r=await dmJsonp('dashboard');
-  if(!r.ok||!r.summary)throw Error(r.error||'โหลดสถิติไม่สำเร็จ');
-  const d=r.summary;
-  for(const [id,val] of Object.entries({statTotal:d.total,statProb:d.problems,statGood:d.compliments,statClosed:d.closed,statProgress:d.progress,statReview:d.review})){
-    const el=document.getElementById(id);if(el)el.textContent=Number(val||0).toLocaleString('th-TH');
-  }
-  const rate=d.problems?Math.round(100*d.closed/d.problems):0;
-  const rateEl=document.getElementById('statClosedRate');if(rateEl)rateEl.textContent=rate+'%';
-  const label=document.getElementById('completionLabel');if(label)label.textContent=d.closed+' จาก '+d.problems+' รายการ';
-  const bar=document.getElementById('completionBar');if(bar)bar.style.width=rate+'%';
-  const last=document.getElementById('lastUpdate');if(last)last.textContent=new Date(d.updatedAt).toLocaleString('th-TH');
-  if(!ChartLib) await loadChartLib();
-  if(ChartLib){
-    if(catPieChart)catPieChart.destroy();
-    if(typePieChart)typePieChart.destroy();
-    const catLabels=[],catValues=[],catColors=[];
-    Object.entries(cats).forEach(([id,c])=>{const count=Number((d.categories||[])[Number(id)-1]||0);if(count){catLabels.push(c.n);catValues.push(count);catColors.push(c.color);}});
-    document.getElementById('catPlaceholder').style.display=catValues.length?'none':'flex';
-    document.getElementById('catPie').style.display=catValues.length?'block':'none';
-    if(catValues.length)catPieChart=new ChartLib(document.getElementById('catPie'),{type:'doughnut',data:{labels:catLabels,datasets:[{data:catValues,backgroundColor:catColors}]},options:{responsive:true,maintainAspectRatio:false}});
-    document.getElementById('typePlaceholder').style.display=d.total?'none':'flex';
-    document.getElementById('typePie').style.display=d.total?'block':'none';
-    if(d.total)typePieChart=new ChartLib(document.getElementById('typePie'),{type:'doughnut',data:{labels:['แจ้งปัญหา','ชื่นชม'],datasets:[{data:[d.problems,d.compliments],backgroundColor:['#e11d48','#059669']}]},options:{responsive:true,maintainAspectRatio:false}});
-    document.getElementById('monthlyPlaceholder').innerHTML='กราฟรายเดือนจะเปิดใช้เมื่อ API รองรับข้อมูลแนวโน้ม';
-  }
-  setCloudStatus('เชื่อมต่อ Google Sheets แล้ว · แสดงเฉพาะสถิติรวม',true);
+function saveLocalData(){ /* Public mode: do not cache shared records in localStorage. */ }
+function saveAllData(){throw new Error('เว็บไซต์สาธารณะไม่สามารถแก้ไขข้อมูลเจ้าหน้าที่ได้');}
+function dmJSONP(action, params={}){
+ return new Promise((resolve,reject)=>{
+  const callback='__dmPublic'+Date.now()+'_'+Math.floor(Math.random()*1e6);
+  const script=document.createElement('script');
+  const timer=setTimeout(()=>{cleanup();reject(new Error('หมดเวลารอ Apps Script'));},18000);
+  function cleanup(){clearTimeout(timer);delete window[callback];script.remove();}
+  window[callback]=payload=>{cleanup();resolve(payload);};
+  script.onerror=()=>{cleanup();reject(new Error('ไม่สามารถติดต่อ Apps Script ได้'));};
+  const url=new URL(DM_API_URL);url.searchParams.set('action',action);
+  url.searchParams.set('callback',callback);url.searchParams.set('_',Date.now());
+  Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));
+  script.src=url.toString();document.head.appendChild(script);
+ });
 }
 async function syncNow(){
-  try{await dmRefreshDashboard();alert('อัปเดตสถิติจาก Google Sheets แล้ว');}
-  catch(e){setCloudStatus('เชื่อมต่อไม่สำเร็จ: '+e.message);alert(e.message);}
+ if(syncInProgress)return;
+ syncInProgress=true;setCloudStatus('กำลังอ่านข้อมูลจาก Google Sheets…');
+ try{
+  const result=await dmJSONP('publicRecords');
+  if(!result||!result.ok||!Array.isArray(result.records))throw Error(result?.error||'ข้อมูลตอบกลับไม่ถูกต้อง — ตรวจเวอร์ชัน Code.gs');
+  data=result.records.map((r,i)=>({id:i+1,ticketId:r.ticketId,createdAt:r.createdAt,c:Number(r.category),t:r.type,title:'รายการ '+r.ticketId,desc:'ข้อมูลรายละเอียดเก็บไว้ในระบบเจ้าหน้าที่',location:'-',name:'ไม่เปิดเผย',contact:'-',status:r.status,assignee:'',dueDate:'',resolution:'',closedAt:r.closedAt||'',time:r.createdAt?new Date(r.createdAt).toLocaleString('th-TH'):'',imgs:[],timeline:[],evidence:[]}));
+  currentListPage=1;renderCatGrid();renderList();await updateDash();
+  setCloudStatus('เชื่อม Google Sheets แล้ว · '+data.length+' รายการ (แสดงเฉพาะข้อมูลที่เปิดเผยได้)',true);
+ }catch(e){setCloudStatus('เชื่อมต่อไม่สำเร็จ: '+e.message);throw e;}
+ finally{syncInProgress=false;}
 }
-async function dmSendTicket(payload){
-  const nonce=crypto.randomUUID();
-  sessionStorage.setItem('dmPendingReceipt',nonce);
+function dmNonce(){
+ if(window.crypto?.randomUUID)return crypto.randomUUID();
+ throw Error('เบราว์เซอร์ไม่รองรับการสร้างรหัสส่งเรื่องที่ปลอดภัย');
+}
+async function dmSubmitPublic(e){
+ e.preventDefault();e.stopImmediatePropagation();
+ if(!curType){alert('กรุณาเลือก แจ้งปัญหา หรือ ชื่นชม');return;}
+ if(pics.length){alert('เวอร์ชันนี้ยังไม่รองรับการส่งรูปภาพไป Google Drive กรุณาลบรูปก่อนส่งเรื่อง');return;}
+ const category=Number(document.getElementById('cid').value);
+ const payload={type:curType,category,title:document.getElementById('topic').value.trim(),detail:document.getElementById('detail').value.trim(),location:document.getElementById('location').value.trim(),reporterName:document.getElementById('name').value.trim(),reporterContact:document.getElementById('contact').value.trim()};
+ if(!payload.title||!payload.detail){alert('กรุณากรอกหัวข้อและรายละเอียด');return;}
+ const buttons=['btnSubP','btnSubG'].map(id=>document.getElementById(id));
+ buttons.forEach(b=>b.disabled=true);
+ const nonce=dmNonce();
+ try{
+  setCloudStatus('กำลังส่งเรื่องไป Google Sheets…');
+  // text/plain + no-cors: the browser cannot inspect the POST response.
+  // Only a confirmed server-side receipt is treated as success.
   await fetch(DM_API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'createTicket',nonce,payload})});
-  for(let i=0;i<18;i++){
-    await new Promise(resolve=>setTimeout(resolve,1000));
-    let receipt;try{receipt=await dmJsonp('receipt',{nonce});}catch(e){continue;}
-    if(receipt.pending)continue;
-    if(!receipt.ok)throw Error(receipt.error||'บันทึกไม่สำเร็จ');
-    sessionStorage.removeItem('dmPendingReceipt');
-    return receipt;
+  let receipt=null;
+  for(let attempt=0;attempt<12;attempt++){
+   await new Promise(r=>setTimeout(r,1500));
+   const result=await dmJSONP('receipt',{nonce});
+   if(result?.ok&&!result.pending){receipt=result;break;}
+   if(result&&!result.ok)throw Error(result.error||'บันทึกไม่สำเร็จ');
   }
-  throw Error('ยังยืนยันผลการบันทึกไม่ได้ กรุณาตรวจสอบกับเจ้าหน้าที่ก่อนส่งซ้ำ (รหัสตรวจสอบ: '+nonce+')');
+  if(!receipt){setCloudStatus('ยังยืนยันผลการบันทึกไม่ได้ กรุณาติดต่อเจ้าหน้าที่ก่อนส่งซ้ำ');alert('ส่งคำขอแล้ว แต่ยังยืนยันเลขรับเรื่องไม่ได้ กรุณาอย่าส่งซ้ำทันที');return;}
+  alert('บันทึกสำเร็จ เลขรับเรื่อง: '+receipt.ticketId);
+  document.getElementById('f').reset();closeForm();
+  try{await syncNow();}catch(_){}
+ }catch(err){setCloudStatus('การส่งเรื่องมีปัญหา: '+err.message);alert('ยังยืนยันการรับเรื่องไม่ได้: '+err.message+'\nกรุณาตรวจสอบก่อนส่งซ้ำ');}
+ finally{buttons.forEach(b=>b.disabled=false);}
 }
-// Capture before legacy local-only submit handler. Never send photos in this phase.
-document.getElementById('f').addEventListener('submit',async function(event){
-  event.preventDefault();event.stopImmediatePropagation();
-  if(!DM_API_URL){alert('ยังไม่ได้เชื่อม Google Sheets กรุณาตั้งค่า Apps Script URL ก่อนเปิดรับเรื่อง');return;}
-  if(!curType){alert('กรุณาเลือก แจ้งปัญหา หรือ ชื่นชม');return;}
-  if(pics.length){alert('ระบบฐานกลางยังไม่รองรับการแนบภาพ กรุณานำภาพออกก่อนส่งเรื่อง');return;}
-  if(Number(document.getElementById('editIdx').value)>=0){alert('ไม่อนุญาตให้แก้ไขเรื่องผ่านหน้าสาธารณะ');return;}
-  const btns=[document.getElementById('btnSubP'),document.getElementById('btnSubG')];
-  btns.forEach(b=>b.disabled=true);
-  try{
-    const receipt=await dmSendTicket({type:curType,category:Number(document.getElementById('cid').value),title:document.getElementById('topic').value.trim(),detail:document.getElementById('detail').value.trim(),location:document.getElementById('location').value.trim(),reporterName:document.getElementById('name').value.trim(),reporterContact:document.getElementById('contact').value.trim()});
-    alert('บันทึกลง Google Sheets สำเร็จ\nเลขรับเรื่อง: '+receipt.ticketId);
-    closeForm();
-    try{await dmRefreshDashboard();}catch(e){setCloudStatus('บันทึกสำเร็จ แต่โหลดสถิติไม่ได้');}
-  }catch(err){alert('ยังไม่สามารถยืนยันการรับเรื่องได้: '+err.message);}
-  finally{btns.forEach(b=>b.disabled=false);}
-},true);
+// Capture listener runs before legacy localStorage submission handler.
+document.getElementById('f').addEventListener('submit',dmSubmitPublic,true);
 let currentManageId = null;
 let pendingEvidence = [];
 let currentListPage = 1;
@@ -900,7 +874,6 @@ function getFilteredRecords(){
 }
 
 async function updateDash(){
-    if(DM_API_URL){try{await dmRefreshDashboard();}catch(e){setCloudStatus('โหลดสถิติฐานกลางไม่สำเร็จ: '+e.message);}return;}
     const total = data.length;
     const prob = data.filter(x=>x.t==='p').length;
     const good = data.filter(x=>x.t==='g').length;
@@ -1445,8 +1418,8 @@ function updateTicketPreview(){
   }
   box.classList.remove('editing');
   if(!curType){number.textContent='เลือก “แจ้งปัญหา” หรือ “ชื่นชม”';hint.textContent='ระบบจะแสดงหมายเลขตัวอย่างตามประเภทที่เลือก';return;}
-  number.textContent=nextTicketId(curType,new Date());
-  hint.textContent=(curType==='g'?'Compliment · ชื่นชม':'Complaint · ร้องเรียน')+' · ตัวอย่างเลขถัดไปในเบราว์เซอร์นี้';
+  number.textContent='ระบบจะออกเลขรับเรื่องหลังบันทึกสำเร็จ';
+  hint.textContent='เลขรับเรื่องจริงออกโดย Google Apps Script';
 }
 function statusLabel(status){return ({closed:'ปิดงานสำเร็จ',progress:'กำลังดำเนินการ',review:'รอตรวจสอบ'})[status]||'รอตรวจสอบ';}
 function updateOperationsDashboard(){
@@ -1522,15 +1495,10 @@ window.printPresentation=function(){renderPresentation();document.body.classList
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closePresentation();});
 
 window.addEventListener('DOMContentLoaded',async()=>{
-    if(DM_API_URL){setCloudStatus('กำลังโหลดสถิติจากฐานข้อมูลกลาง…');}
-    // Public page deliberately ignores any old browser-local records.
-    renderCatGrid(); renderList();
-    await updateDash();
-    if(DM_API_URL){try{await dmRefreshDashboard();}catch(e){setCloudStatus('สถิติฐานกลางยังโหลดไม่ได้: '+e.message);}}
-    if(DM_API_URL){const list=document.getElementById('listBox');if(list)list.insertAdjacentHTML('beforebegin','<p style="padding:12px;color:#475569">ข้อมูลรายการและข้อมูลผู้ร้องเรียนไม่แสดงสาธารณะ เพื่อคุ้มครองข้อมูลส่วนบุคคล</p>');}
-    document.body.classList.add('loaded');
-    updateOperationsDashboard();
-    setTimeout(()=>[catPieChart,typePieChart,monthlyChart].forEach(chart=>{if(chart)chart.resize();}),250);
+  renderCatGrid();renderList();await updateDash();
+  document.body.classList.add('loaded');
+  try{await syncNow();}catch(e){console.warn('DM public connection:',e.message);}
+  setTimeout(()=>[catPieChart,typePieChart,monthlyChart].forEach(chart=>{if(chart)chart.resize();}),250);
 });
 window.addEventListener('resize',()=>{
   clearTimeout(window.__dmChartResizeTimer);
