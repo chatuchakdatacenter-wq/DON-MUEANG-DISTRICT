@@ -1,1 +1,1401 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DON MUEANG DISTRICT</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:"Sarabun",sans-serif}
+        :root{
+            --primary:#165DFF; --p-light:#E8F3FF; --success:#00B42A; --s-light:#E8FFEA;
+            --danger:#F53F3F; --d-light:#FFECE8; --warn:#FF7D00; --w-light:#FFF3E8;
+            --gray:#86909C; --g-bg:#F2F3F5; --shadow:0 4px 24px rgba(22,93,255,.1);
+            --radius:20px; --radius-sm:12px;
+        }
+        body{background:linear-gradient(135deg,#F0F4FF,#F7F9FF);min-height:100vh}
+        .loading{position:fixed;inset:0;background:#fff;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem}
+        .loading i{font-size:2.5rem;color:var(--primary);animation:spin 1s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .loaded .loading{display:none}
+        header{background:linear-gradient(135deg,#165DFF,#7B61FF);color:#fff;padding:2rem 1rem 5rem;text-align:center}
+        header h1{font-size:1.6rem;margin-bottom:.5rem}
+        header p{opacity:.9}
+
+        .dash-wrap{max-width:1200px;margin:-3rem auto 0;padding:0 1rem}
+        .stat-top{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-bottom:1.5rem}
+        .stat-card{background:#fff;border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow);transition:.3s}
+        .stat-card:hover{transform:translateY(-4px)}
+        .stat-card.accent{background:linear-gradient(135deg,#165DFF,#7B61FF);color:#fff}
+        .stat-card.accent .stat-val{color:#fff}
+        .stat-card.accent .stat-desc{color:rgba(255,255,255,.85)}
+        .stat-label{font-size:.9rem;color:var(--gray);margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem}
+        .stat-val{font-size:2.2rem;font-weight:700;color:var(--primary)}
+        .stat-desc{font-size:.85rem;color:var(--gray);margin-top:.3rem}
+        .stat-small{font-size:.8rem;opacity:.8;margin-top:.5rem;display:flex;align-items:center;gap:.3rem}
+
+        .chart-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1.5rem;margin-bottom:1.5rem}
+        .chart-card{background:#fff;border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow)}
+        .chart-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+        .chart-title{font-size:1rem;font-weight:600;display:flex;align-items:center;gap:.5rem}
+        .chart-title i{color:var(--primary)}
+        .chart-wrap{position:relative;height:300px}
+        .chart-placeholder{display:flex;align-items:center;justify-content:center;height:100%;color:#aaa;gap:.5rem}
+
+        .container{max-width:1200px;margin:0 auto;padding:0 1rem 2rem}
+        .sec-title{font-size:1.1rem;font-weight:600;margin:2rem 0 1rem;display:flex;align-items:center;gap:.5rem}
+        .cat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem}
+        .cat-card{background:#fff;border-radius:var(--radius);padding:1.2rem;cursor:pointer;transition:.3s;border:2px solid transparent;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+        .cat-card:hover{transform:translateY(-4px);border-color:var(--primary);box-shadow:var(--shadow)}
+        .cat-icon{width:44px;height:44px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:.6rem}
+        .cat-card:nth-child(1) .cat-icon{background:var(--p-light);color:var(--primary)}
+        .cat-card:nth-child(2) .cat-icon{background:#F2E8FF;color:#722ED1}
+        .cat-card:nth-child(3) .cat-icon{background:var(--s-light);color:var(--success)}
+        .cat-card:nth-child(4) .cat-icon{background:var(--w-light);color:var(--warn)}
+        .cat-card:nth-child(5) .cat-icon{background:var(--d-light);color:var(--danger)}
+        .cat-card:nth-child(6) .cat-icon{background:#FFFBE8;color:#ECB200}
+        .cat-card:nth-child(7) .cat-icon{background:#E8F9FF;color:#00B5D8}
+        .cat-card:nth-child(8) .cat-icon{background:#F2F3F5;color:#666}
+        .cat-card:nth-child(9) .cat-icon{background:#FFE8F2;color:#E84A8F}
+        .cat-card:nth-child(10) .cat-icon{background:#E8FFFA;color:#00B49A}
+        .cat-name{font-weight:600;margin-bottom:.2rem}
+        .cat-desc{font-size:.8rem;color:#888;margin-bottom:.5rem}
+
+        .form-wrap{background:#fff;border-radius:var(--radius);padding:1.5rem;display:none;box-shadow:var(--shadow)}
+        .form-wrap.show{display:block;animation:fadeIn .3s ease}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)}}
+        .form-title{font-size:1.1rem;font-weight:600;margin-bottom:1.2rem;padding-bottom:.8rem;border-bottom:1px solid #eee}
+        .f-group{margin-bottom:1rem}
+        label{display:block;font-weight:600;margin-bottom:.4rem;font-size:.9rem}
+        .req{color:var(--danger)}
+        input,textarea{width:100%;padding:.8rem;border:2px solid #eee;border-radius:var(--radius-sm);font-size:1rem;transition:.2s}
+        input:focus,textarea:focus{outline:none;border-color:var(--primary)}
+        .loc-row{display:grid;grid-template-columns:1fr auto;gap:.7rem;align-items:center}
+        .loc-btn{padding:.8rem 1rem;background:var(--p-light);color:var(--primary);border:none;border-radius:var(--radius-sm);cursor:pointer;font-weight:600;white-space:nowrap;transition:.2s}
+        .loc-btn:hover{background:#D4E8FF}
+        .loc-btn.active{background:var(--primary);color:#fff}
+        .loc-hint{font-size:.8rem;color:#888;margin-top:.3rem}
+        .up-row{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:.5rem}
+        .up-btn{padding:.9rem;border-radius:var(--radius-sm);border:2px solid;display:flex;align-items:center;justify-content:center;gap:.5rem;cursor:pointer;font-weight:500;transition:.2s}
+        .up-btn.cam{border-color:var(--d-light);background:var(--d-light);color:var(--danger)}
+        .up-btn.cam:hover{background:#FFD4CC}
+        .up-btn.gal{border-color:var(--s-light);background:var(--s-light);color:var(--success)}
+        .up-btn.gal:hover{background:#D4F5D7}
+        input[type="file"]{display:none}
+        .p-count{font-size:.85rem;color:#666;margin:.5rem 0}
+        .p-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:.5rem}
+        .p-item{position:relative;border-radius:var(--radius-sm);overflow:hidden;aspect-ratio:1/1;border:1px solid #eee}
+        .p-item img{width:100%;height:100%;object-fit:cover}
+        .p-del{position:absolute;top:3px;right:3px;width:22px;height:22px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;cursor:pointer;font-size:.75rem}
+        .p-num{position:absolute;bottom:3px;left:3px;background:rgba(0,0,0,.6);color:#fff;font-size:.7rem;padding:0 5px;border-radius:8px}
+
+        .cam-modal{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;padding:1rem}
+        .cam-modal.show{display:flex}
+        .cam-box{position:relative;width:100%;max-width:500px;background:#000;border-radius:var(--radius);overflow:hidden}
+        #camLive{width:100%;display:block;transform:scaleX(-1)}
+        #camSnap{width:100%;display:none}
+        .cam-ctrl{display:flex;gap:1.2rem;align-items:center;margin-top:1rem}
+        .c-btn{width:50px;height:50px;border-radius:50%;border:none;cursor:pointer;font-size:1rem}
+        .c-shoot{width:66px;height:66px;background:#fff;border:3px solid #ddd;font-size:1.3rem}
+        .c-close{background:#444;color:#fff}
+        .c-flip{background:var(--primary);color:#fff}
+        .cam-act{display:none;gap:1rem;margin-top:1rem}
+        .cam-modal.show .cam-act{display:flex}
+        .a-btn{padding:.7rem 1.5rem;border-radius:var(--radius-sm);border:none;font-weight:600;cursor:pointer}
+        .a-use{background:var(--success);color:#fff}
+        .a-re{background:var(--warn);color:#fff}
+
+        .btn-row{display:flex;gap:.7rem;margin-top:1.5rem;flex-wrap:wrap}
+        .btn{padding:.85rem 1.5rem;border:none;border-radius:var(--radius-sm);font-size:.95rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:.5rem;transition:.2s}
+        .btn-back{background:#eee;color:#555}
+        .btn-p{background:linear-gradient(135deg,#F53F3F,#D93636);color:#fff}
+        .btn-g{background:linear-gradient(135deg,#00B42A,#009620);color:#fff}
+
+        .list-item{background:#fff;border-radius:var(--radius);padding:1.2rem;margin-bottom:1rem;border-left:5px solid;transition:.2s;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+        .list-item:hover{box-shadow:var(--shadow);transform:translateX(3px)}
+        .list-p{border-color:var(--danger)}
+        .list-g{border-color:var(--success)}
+        .list-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;margin-bottom:.5rem}
+        .list-cat{font-weight:600;color:var(--primary)}
+        .list-tag{padding:.2rem .6rem;border-radius:20px;font-size:.75rem;font-weight:600}
+        .list-p .list-tag{background:var(--d-light);color:var(--danger)}
+        .list-g .list-tag{background:var(--s-light);color:var(--success)}
+        .list-title{font-weight:600;margin:.4rem 0}
+        .list-desc{color:#666;white-space:pre-line;margin-bottom:.5rem;font-size:.9rem}
+        .list-loc{font-size:.85rem;color:var(--primary);margin:.5rem 0;display:flex;align-items:center;gap:.4rem}
+        .list-loc a{color:var(--primary);text-decoration:underline}
+        .list-imgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:.5rem;margin:.5rem 0}
+        .list-imgs img{width:100%;height:70px;object-fit:cover;border-radius:var(--radius-sm);cursor:pointer;border:1px solid #eee}
+        .list-foot{font-size:.8rem;color:#aaa;margin-top:.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
+        .list-act button{font-size:.75rem;padding:.25rem .5rem;border:none;border-radius:6px;cursor:pointer;margin-left:.3rem}
+        .btn-ed{background:var(--w-light);color:var(--warn)}
+        .btn-del{background:#f0f0f0;color:#666}
+        .empty{text-align:center;padding:3rem;color:#ccc}
+        .empty i{font-size:2.5rem;margin-bottom:.5rem}
+
+        .lb{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:9998;padding:1rem}
+        .lb.show{display:flex}
+        .lb img{max-width:95%;max-height:80vh;border-radius:var(--radius)}
+        .lb-close{position:absolute;top:1rem;right:1rem;color:#fff;font-size:1.8rem;cursor:pointer}
+
+        footer{text-align:center;padding:2rem;color:#999;font-size:.8rem;margin-top:2rem}
+    
+
+    /* ===== Modern UI refresh: presentation only; existing HTML/JS logic preserved ===== */
+    :root{
+      --primary:#2563eb;--p-light:#eff6ff;--success:#059669;--s-light:#ecfdf5;
+      --danger:#e11d48;--d-light:#fff1f2;--warn:#d97706;--w-light:#fffbeb;
+      --gray:#64748b;--g-bg:#f1f5f9;--shadow:0 12px 34px rgba(15,23,42,.075);
+      --radius:22px;--radius-sm:14px;
+    }
+    *{font-family:"Sarabun",sans-serif}
+    body{
+      color:#172033;
+      background:
+        radial-gradient(ellipse at 8% 0%,rgba(59,130,246,.10),transparent 34rem),
+        radial-gradient(ellipse at 95% 20%,rgba(20,184,166,.08),transparent 30rem),
+        #f5f7fb;
+      line-height:1.6;
+    }
+    header{
+      position:relative;overflow:hidden;text-align:left;
+      padding:2.8rem max(1.25rem,calc((100% - 1160px)/2)) 5.1rem;
+      background:linear-gradient(118deg,#102a56 0%,#1d4ed8 58%,#4f46e5 100%);
+      box-shadow:0 16px 40px rgba(30,64,175,.18);
+    }
+    header:before,header:after{content:"";position:absolute;border-radius:50%;pointer-events:none}
+    header:before{width:330px;height:330px;right:8%;top:-210px;border:1px solid rgba(255,255,255,.18);box-shadow:0 0 0 35px rgba(255,255,255,.035),0 0 0 75px rgba(255,255,255,.025)}
+    header:after{width:180px;height:180px;right:22%;bottom:-145px;background:rgba(255,255,255,.07)}
+    header h1{position:relative;z-index:1;font-size:clamp(1.45rem,3vw,2.15rem);font-weight:700;letter-spacing:-.3px;margin-bottom:.45rem}
+    header p{position:relative;z-index:1;color:#e0eaff;font-size:1rem}
+    .dash-wrap{position:relative;z-index:2;max-width:1200px;margin:-3.2rem auto 0;padding:0 1.2rem}
+    .stat-top{grid-template-columns:repeat(3,minmax(0,1fr));gap:1.1rem;margin-bottom:1.35rem}
+    .stat-card,.chart-card,.cat-card,.form-wrap,.list-item{
+      border:1px solid rgba(226,232,240,.9);box-shadow:0 8px 28px rgba(15,23,42,.055);
+    }
+    .stat-card{position:relative;overflow:hidden;border-radius:22px;padding:1.35rem 1.45rem;min-height:150px;transition:transform .22s,box-shadow .22s}
+    .stat-card:hover{transform:translateY(-4px);box-shadow:0 16px 36px rgba(15,23,42,.10)}
+    .stat-card:not(.accent):after{content:"";position:absolute;width:88px;height:88px;border-radius:50%;right:-28px;bottom:-38px;background:currentColor;opacity:.045}
+    .stat-card.accent{background:linear-gradient(135deg,#1d4ed8,#4338ca);border-color:transparent;color:#fff;box-shadow:0 12px 30px rgba(37,99,235,.22)}
+    .stat-label{font-size:.88rem;font-weight:600;color:#64748b;gap:.55rem}
+    .stat-label i{font-size:1rem}
+    .stat-val{font-size:clamp(2rem,4vw,2.55rem);line-height:1.25;letter-spacing:-1px;margin-top:.25rem}
+    .stat-desc{font-size:.84rem;color:#64748b}
+    .stat-small{font-size:.77rem;color:rgba(255,255,255,.8);margin-top:.65rem}
+    .stat-card.accent .stat-label,.stat-card.accent .stat-desc{color:rgba(255,255,255,.86)}
+    .chart-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:1.1rem;margin-bottom:1.5rem}
+    .chart-card{border-radius:22px;padding:1.35rem 1.4rem;background:rgba(255,255,255,.94)}
+    .chart-head{padding-bottom:.85rem;border-bottom:1px solid #eef2f7;margin-bottom:1rem}
+    .chart-title{font-size:1rem;color:#1e293b}
+    .chart-title i{background:#eff6ff;color:#2563eb;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:11px}
+    .chart-wrap{height:280px}
+    .container{max-width:1200px;padding:0 1.2rem 2rem}
+    .sec-title{font-size:1.12rem;color:#172033;font-weight:700;margin:2rem 0 1rem;gap:.7rem}
+    .sec-title i{width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;background:#eaf1ff;color:#2563eb;border-radius:12px}
+    .cat-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:.9rem}
+    .cat-card{position:relative;min-width:0;border-radius:20px;padding:1.15rem;background:linear-gradient(160deg,#fff,#fcfdff);border:1px solid #e7edf5;box-shadow:0 5px 18px rgba(15,23,42,.035)}
+    .cat-card:hover{transform:translateY(-5px);border-color:#93b4ff;box-shadow:0 14px 30px rgba(37,99,235,.12)}
+    .cat-icon{width:48px;height:48px;border-radius:15px;font-size:1.2rem;margin-bottom:.85rem}
+    .cat-name{font-size:.96rem;font-weight:700;color:#243047;line-height:1.45;min-height:2.7em}
+    .cat-desc{display:inline-flex;align-items:center;margin-top:.2rem;margin-bottom:0;padding:.2rem .6rem;border-radius:20px;background:#f1f5f9;color:#64748b;font-size:.76rem}
+    .form-wrap{border-radius:24px;padding:clamp(1.1rem,3vw,2rem);margin:1rem 0;background:#fff}
+    .form-title{font-size:1.25rem;color:#172033;padding-bottom:1rem;border-bottom:1px solid #edf1f6}
+    .f-group{margin-bottom:1.15rem}
+    label{color:#334155;font-size:.9rem}
+    input,textarea{background:#fbfcfe;border:1.5px solid #dfe6ef;border-radius:13px;padding:.85rem .95rem;color:#172033}
+    input:focus,textarea:focus{background:#fff;border-color:#6395ff;box-shadow:0 0 0 4px rgba(37,99,235,.09)}
+    .loc-btn,.up-btn,.btn{border-radius:13px;min-height:44px}
+    .loc-btn{font-size:.9rem}
+    .up-btn{border-width:1px;font-weight:600}
+    .btn{box-shadow:0 4px 10px rgba(15,23,42,.06);padding:.8rem 1.2rem}
+    .btn:hover,.up-btn:hover,.loc-btn:hover{transform:translateY(-1px);filter:saturate(1.08)}
+    .btn-back{background:#f1f5f9;color:#475569}
+    .btn-p{background:linear-gradient(135deg,#e11d48,#be123c)}
+    .btn-g{background:linear-gradient(135deg,#059669,#047857)}
+    .list-item{border-radius:20px;padding:1.25rem 1.35rem;margin-bottom:1rem;border-left-width:4px;background:#fff}
+    .list-p{border-left-color:#e11d48}
+    .list-g{border-left-color:#059669}
+    .list-item:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(15,23,42,.08)}
+    .list-cat{font-size:.9rem}
+    .list-tag{padding:.28rem .75rem;border-radius:30px;font-size:.76rem}
+    .list-title{font-size:1.08rem;color:#1e293b;margin:.65rem 0 .4rem}
+    .list-desc{color:#526176;line-height:1.75}
+    .list-loc{background:#f5f8ff;padding:.55rem .7rem;border-radius:11px;display:inline-flex;max-width:100%;overflow-wrap:anywhere}
+    .list-imgs{grid-template-columns:repeat(auto-fill,minmax(100px,130px));gap:.6rem;margin:.8rem 0}
+    .list-imgs img{height:88px;border-radius:12px;border:1px solid #e2e8f0;transition:transform .2s}
+    .list-imgs img:hover{transform:scale(1.03)}
+    .list-foot{border-top:1px solid #f0f3f7;padding-top:.75rem;margin-top:.8rem;color:#8793a5}
+    .list-act button{padding:.4rem .7rem;border-radius:9px;font-size:.78rem}
+    .btn-ed{background:#fff7ed;color:#c2410c}
+    .btn-del{background:#f1f5f9;color:#475569}
+    .empty{background:#fff;border:1px dashed #cbd5e1;border-radius:20px;color:#94a3b8}
+    footer{color:#94a3b8;border-top:1px solid #e7edf5;background:rgba(255,255,255,.55);margin-top:2rem}
+    .p-item{border-color:#e2e8f0;border-radius:13px}
+    .cam-box{box-shadow:0 20px 60px rgba(0,0,0,.35)}
+    .lb img{box-shadow:0 20px 70px rgba(0,0,0,.35)}
+    /* ===== Work status / close-job dashboard ===== */
+    .work-status-panel{background:rgba(255,255,255,.88);border:1px solid #e2e8f0;border-radius:26px;padding:1.35rem;margin:0 0 1.4rem;box-shadow:0 12px 32px rgba(15,23,42,.055);backdrop-filter:blur(12px)}
+    .work-status-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+    .work-status-heading h2{font-size:1.12rem;font-weight:700;margin:.12rem 0;color:#172033}
+    .work-status-heading h2 i{color:#2563eb;margin-right:.35rem}
+    .work-status-heading p{font-size:.82rem;color:#7b8798}
+    .eyebrow{font-size:.68rem;letter-spacing:1.5px;font-weight:700;color:#64748b}
+    .completion-pill{display:flex;align-items:center;gap:.45rem;padding:.6rem .85rem;border:1px solid #bbf7d0;border-radius:14px;background:#f0fdf4;color:#047857;font-size:.8rem;white-space:nowrap}
+    .completion-pill strong{font-size:1rem}
+    .work-status-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.85rem}
+    .work-stat-card{position:relative;display:flex;align-items:center;gap:.85rem;padding:1rem;border-radius:19px;border:1px solid;overflow:hidden;min-width:0;transition:transform .2s,box-shadow .2s}
+    .work-stat-card:hover{transform:translateY(-3px);box-shadow:0 12px 24px rgba(15,23,42,.08)}
+    .status-closed{background:linear-gradient(135deg,#f0fdf4,#fff);border-color:#bbf7d0;color:#047857}
+    .status-progress{background:linear-gradient(135deg,#fff1f2,#fff);border-color:#fecdd3;color:#be123c}
+    .status-review{background:linear-gradient(135deg,#fffbeb,#fff);border-color:#fde68a;color:#a16207}
+    .work-stat-icon{width:45px;height:45px;flex:0 0 45px;display:grid;place-items:center;border-radius:15px;font-size:1.15rem}
+    .status-closed .work-stat-icon{background:#dcfce7}.status-progress .work-stat-icon{background:#ffe4e6}.status-review .work-stat-icon{background:#fef3c7}
+    .work-stat-copy{display:flex;flex-direction:column;min-width:0}
+    .work-stat-copy span{font-size:.8rem;font-weight:600}
+    .work-stat-copy strong{font-size:1.8rem;line-height:1.2;letter-spacing:-.5px}
+    .work-stat-copy small{font-size:.72rem;opacity:.75;margin-top:.18rem}
+    .status-dot{position:absolute;right:12px;top:12px;width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.65}
+    .completion-track{height:8px;border-radius:99px;background:#e8edf4;overflow:hidden;margin-top:1.15rem}
+    .completion-track span{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#10b981,#059669);transition:width .4s ease}
+    .completion-caption{display:flex;justify-content:space-between;gap:.75rem;margin-top:.45rem;color:#7b8798;font-size:.75rem}
+    .completion-caption strong{color:#334155}
+    .work-status-control{display:flex;align-items:center;flex-wrap:wrap;gap:.55rem;padding:.7rem .8rem;margin-top:.85rem;background:#f8fafc;border:1px solid #e8edf4;border-radius:14px}
+    .work-status-control label{margin:0;font-size:.78rem;color:#64748b;display:flex;align-items:center;gap:.4rem}
+    .work-status-select{max-width:100%;padding:.48rem .7rem;border-radius:10px;border:1px solid #dbe3ee;background:#fff;color:#334155;font-size:.82rem;font-weight:600;cursor:pointer;outline:none}
+    .work-status-select:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+    .record-status-badge{display:inline-flex;align-items:center;gap:.35rem;padding:.28rem .62rem;border-radius:99px;font-size:.72rem;font-weight:700}
+    .record-status-badge.closed{background:#dcfce7;color:#047857}.record-status-badge.progress{background:#ffe4e6;color:#be123c}.record-status-badge.review{background:#fef3c7;color:#a16207}
+    .list-item.status-border-closed{border-top:1px solid #bbf7d0}
+    .list-item.status-border-progress{border-top:1px solid #fecdd3}
+    .list-item.status-border-review{border-top:1px solid #fde68a}
+    /* ===== Modern pagination for submitted reports ===== */
+    .list-pagination{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin:1.15rem 0 1.5rem;padding:1rem 1.1rem;background:rgba(255,255,255,.92);border:1px solid #e5ebf4;border-radius:18px;box-shadow:0 8px 24px rgba(15,23,42,.045)}
+    .pagination-info{font-size:.82rem;color:#64748b}
+    .pagination-info strong{color:#1e293b}
+    .pagination-actions{display:flex;align-items:center;justify-content:center;gap:.35rem;flex-wrap:wrap}
+    .page-btn{min-width:38px;height:38px;padding:0 .65rem;border:1px solid #e2e8f0;border-radius:11px;background:#fff;color:#475569;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .18s}
+    .page-btn:hover:not(:disabled){border-color:#93b4ff;background:#eff6ff;color:#1d4ed8;transform:translateY(-1px)}
+    .page-btn.active{background:linear-gradient(135deg,#2563eb,#4f46e5);border-color:transparent;color:#fff;box-shadow:0 5px 12px rgba(37,99,235,.22)}
+    .page-btn:disabled{opacity:.35;cursor:not-allowed}
+    .page-size-control{display:flex;align-items:center;gap:.5rem;color:#64748b;font-size:.8rem}
+    .page-size-select{padding:.48rem .65rem;border:1px solid #dbe3ee;border-radius:10px;background:#fff;color:#334155;font:inherit;font-weight:600}
+    @media(max-width:700px){
+      .list-pagination{justify-content:center;padding:.9rem;gap:.8rem}
+      .pagination-info{width:100%;text-align:center}
+      .pagination-actions{width:100%}
+      .page-btn{min-width:35px;height:36px}
+      .page-size-control{justify-content:center;width:100%}
+    }
+    @media(max-width:700px){
+      .work-status-panel{padding:1rem;border-radius:20px}
+      .work-status-heading{align-items:flex-start;flex-direction:column}
+      .completion-pill{align-self:flex-start}
+      .work-status-grid{grid-template-columns:1fr;gap:.6rem}
+      .work-stat-card{padding:.85rem 1rem}
+      .work-stat-icon{width:40px;height:40px;flex-basis:40px}
+      .work-stat-copy strong{font-size:1.55rem}
+      .completion-caption{font-size:.7rem}
+      .work-status-control{align-items:flex-start;flex-direction:column}
+      .work-status-select{width:100%;max-width:none}
+    }
+
+    @media(max-width:1000px){
+      .cat-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .stat-top{grid-template-columns:repeat(3,minmax(0,1fr))}
+    }
+    @media(max-width:700px){
+      header{padding:2rem 1.1rem 4.7rem}
+      header h1{font-size:1.45rem}
+      .dash-wrap{padding:0 .8rem;margin-top:-2.8rem}
+      .stat-top{grid-template-columns:1fr;gap:.75rem}
+      .stat-card{min-height:unset;padding:1.05rem 1.2rem}
+      .stat-val{font-size:2rem}
+      .chart-row{grid-template-columns:1fr;gap:.85rem}
+      .chart-card{padding:1.05rem}
+      .chart-wrap{height:260px}
+      .container{padding:0 .8rem 1.5rem}
+      .cat-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem}
+      .cat-card{padding:.9rem;border-radius:17px}
+      .cat-icon{width:42px;height:42px;border-radius:13px;margin-bottom:.65rem}
+      .cat-name{font-size:.88rem;min-height:2.8em}
+      .form-wrap{padding:1rem;border-radius:18px}
+      .loc-row{grid-template-columns:1fr}
+      .loc-btn{width:100%}
+      .list-item{padding:1rem;border-radius:17px}
+      .list-foot{align-items:flex-start}
+      .list-foot>span:first-child{line-height:1.7}
+      .list-imgs{grid-template-columns:repeat(auto-fill,minmax(78px,1fr))}
+      .list-imgs img{height:75px}
+      .btn-row{gap:.5rem}
+      .btn{flex:1;justify-content:center;padding:.75rem .8rem;font-size:.88rem}
+    }
+    @media(max-width:360px){.cat-grid{grid-template-columns:1fr}.up-row{grid-template-columns:1fr}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+
+    /* Presentation mode: executive-ready full-screen dashboard */
+    .presentation-launch{display:inline-flex;align-items:center;gap:.55rem;margin-top:1.25rem;padding:.78rem 1.15rem;border:1px solid rgba(255,255,255,.35);border-radius:14px;background:rgba(255,255,255,.14);color:#fff;font:600 .92rem "Sarabun",sans-serif;cursor:pointer;backdrop-filter:blur(12px);box-shadow:0 8px 24px rgba(15,23,42,.12);transition:transform .2s,background .2s}
+    .presentation-launch:hover{transform:translateY(-2px);background:rgba(255,255,255,.24)}
+    .presentation-mode{position:fixed;inset:0;z-index:10020;display:none;overflow:auto;color:#eaf1ff;background:radial-gradient(ellipse at 12% 0%,rgba(59,130,246,.24),transparent 35%),radial-gradient(ellipse at 90% 12%,rgba(124,58,237,.2),transparent 32%),#071225;padding:clamp(16px,3vw,42px)}
+    .presentation-mode.show{display:block;animation:presFade .25s ease}
+    @keyframes presFade{from{opacity:0;transform:scale(.99)}to{opacity:1;transform:scale(1)}}
+    .pres-shell{max-width:1500px;margin:0 auto}
+    .pres-top{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:clamp(22px,3vw,42px)}
+    .pres-brand{display:flex;align-items:center;gap:14px}
+    .pres-brand-icon{width:54px;height:54px;display:grid;place-items:center;border-radius:18px;background:linear-gradient(135deg,#3b82f6,#7c3aed);font-size:1.35rem;box-shadow:0 10px 28px #2563eb44}
+    .pres-eyebrow{color:#93b4ff;font-size:.75rem;letter-spacing:.16em;font-weight:700}
+    .pres-title{font-size:clamp(1.35rem,3vw,2.2rem);font-weight:700;line-height:1.25;margin-top:3px}
+    .pres-subtitle{color:#9eb0cc;font-size:.9rem;margin-top:5px}
+    .pres-actions{display:flex;gap:.55rem;flex-wrap:wrap}
+    .pres-action{border:1px solid #2c3d59;background:#13213a;color:#eaf1ff;border-radius:12px;padding:.7rem .9rem;cursor:pointer;font:600 .85rem "Sarabun",sans-serif}
+    .pres-action.primary{background:linear-gradient(135deg,#2563eb,#6d4aff);border-color:transparent}
+    .pres-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:16px}
+    .pres-card{border:1px solid rgba(148,163,184,.18);border-radius:22px;background:linear-gradient(145deg,rgba(22,37,62,.96),rgba(12,24,43,.96));padding:clamp(16px,2vw,26px);box-shadow:0 16px 42px rgba(0,0,0,.14)}
+    .pres-kpi-label{display:flex;align-items:center;gap:9px;color:#a9bad3;font-size:.9rem}
+    .pres-kpi-icon{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:#263c5e;color:#bcd4ff}
+    .pres-kpi-value{font-size:clamp(2rem,4vw,3.25rem);font-weight:700;letter-spacing:-.04em;line-height:1.15;margin:16px 0 5px;color:#fff}
+    .pres-kpi-note{font-size:.82rem;color:#8ea2bf}
+    .pres-lower{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px}
+    .pres-section-title{font-size:1.05rem;font-weight:700;color:#f3f7ff;display:flex;align-items:center;gap:9px;margin-bottom:18px}
+    .pres-status-row{display:grid;grid-template-columns:145px minmax(0,1fr) 48px;align-items:center;gap:12px;margin:18px 0}
+    .pres-status-name{display:flex;align-items:center;gap:8px;font-size:.9rem;color:#d9e4f5}
+    .pres-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+    .pres-track{height:11px;border-radius:99px;background:#24344e;overflow:hidden}
+    .pres-fill{height:100%;border-radius:99px;transition:width .5s ease}
+    .pres-status-num{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+    .pres-completion{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-top:24px;padding:18px;border-radius:17px;background:linear-gradient(100deg,rgba(16,185,129,.14),rgba(16,185,129,.035));border:1px solid rgba(52,211,153,.22)}
+    .pres-completion strong{font-size:2rem;color:#6ee7b7}
+    .pres-completion small{display:block;color:#9eb0cc;margin-top:2px}
+    .pres-record{padding:13px 0;border-bottom:1px solid rgba(148,163,184,.14);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
+    .pres-record:last-child{border-bottom:0;padding-bottom:0}
+    .pres-record-title{font-weight:600;color:#f0f5ff;overflow-wrap:anywhere}
+    .pres-record-meta{font-size:.78rem;color:#8ea2bf;margin-top:4px}
+    .pres-badge{white-space:nowrap;display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:.76rem;font-weight:700}
+    .pres-badge.closed{color:#6ee7b7;background:rgba(16,185,129,.13)}.pres-badge.progress{color:#fda4af;background:rgba(244,63,94,.13)}.pres-badge.review{color:#fcd34d;background:rgba(245,158,11,.13)}
+    .pres-footer{display:flex;justify-content:space-between;gap:1rem;color:#7186a6;font-size:.78rem;margin-top:18px}
+    @media(max-width:850px){.pres-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.pres-lower{grid-template-columns:1fr}.pres-top{align-items:flex-start}.pres-status-row{grid-template-columns:130px minmax(0,1fr) 38px}}
+    @media(max-width:520px){.presentation-mode{padding:14px}.pres-top{flex-direction:column}.pres-actions{width:100%}.pres-action{flex:1}.pres-kpis{gap:9px}.pres-card{padding:15px;border-radius:17px}.pres-kpi-icon{width:32px;height:32px}.pres-kpi-value{font-size:2rem;margin:12px 0 4px}.pres-kpi-label{font-size:.78rem;align-items:flex-start}.pres-status-row{grid-template-columns:1fr 42px;gap:8px}.pres-status-name{grid-column:1/-1}.pres-track{grid-column:1}.pres-status-num{grid-column:2;grid-row:2}.pres-record{grid-template-columns:1fr}.pres-badge{justify-self:start}.pres-footer{flex-direction:column}}
+    @media print{body.presentation-print>*:not(#presentationMode){display:none!important}.presentation-mode{position:static;display:block!important;overflow:visible;background:#071225!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.pres-actions{display:none}}
+
+
+    /* ===== Operations center: search, SLA, audit trail, export & job detail ===== */
+    .ops-panel{background:#fff;border:1px solid #e2e8f0;border-radius:24px;padding:1.15rem;margin:1.4rem 0;box-shadow:0 10px 30px rgba(15,23,42,.045)}
+    .ops-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+    .ops-head h2{font-size:1.08rem;color:#172033}.ops-head p{font-size:.8rem;color:#64748b;margin-top:.25rem}
+    .ops-actions{display:flex;gap:.5rem;flex-wrap:wrap}.ops-btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;border:1px solid #dbe4f0;border-radius:11px;background:#fff;padding:.58rem .78rem;font:600 .8rem Sarabun,sans-serif;color:#334155;cursor:pointer}.ops-btn:hover{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}.ops-btn.primary{background:#1d4ed8;border-color:#1d4ed8;color:#fff}.ops-btn.danger{color:#b91c1c}
+    .ops-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.7rem;margin-bottom:1rem}.ops-kpi{padding:.9rem 1rem;border-radius:16px;background:#f8fafc;border:1px solid #edf1f7}.ops-kpi span{display:block;color:#64748b;font-size:.76rem}.ops-kpi strong{display:block;color:#172033;font-size:1.45rem;margin:.18rem 0}.ops-kpi small{font-size:.7rem;color:#94a3b8}.ops-kpi.overdue{background:#fff1f2;border-color:#fecdd3}.ops-kpi.overdue strong{color:#be123c}
+    .ops-tools{display:grid;grid-template-columns:minmax(180px,2fr) repeat(3,minmax(130px,1fr));gap:.65rem}.ops-tools input,.ops-tools select,.manage-form input,.manage-form textarea,.manage-form select{width:100%;border:1px solid #dbe3ee;border-radius:11px;background:#fff;padding:.68rem .75rem;font:400 .88rem Sarabun,sans-serif;color:#334155}.ops-tools input:focus,.ops-tools select:focus,.manage-form input:focus,.manage-form textarea:focus,.manage-form select:focus{outline:2px solid #bfdbfe;border-color:#60a5fa}
+    .ticket-preview{display:flex;flex-direction:column;gap:.28rem;margin:1rem 0;padding:.85rem 1rem;border:1px solid #bfdbfe;border-radius:14px;background:linear-gradient(135deg,#eff6ff,#f8fafc);color:#1e3a8a}
+    .ticket-preview-label{font-size:.78rem;font-weight:700;color:#475569}
+    .ticket-preview strong{font-size:1.12rem;letter-spacing:.035em;overflow-wrap:anywhere}
+    .ticket-preview small{font-size:.75rem;color:#64748b}
+    .ticket-preview.editing{border-color:#cbd5e1;background:#f8fafc;color:#334155}
+    .ticket-meta{display:flex;gap:.5rem;flex-wrap:wrap;margin:.45rem 0;color:#64748b;font-size:.76rem}.ticket-chip{display:inline-flex;align-items:center;gap:.3rem;background:#f1f5f9;border-radius:8px;padding:.22rem .5rem}.ticket-chip.late{background:#ffe4e6;color:#be123c}.ticket-chip.ok{background:#dcfce7;color:#047857}
+    .ops-note{padding:.75rem .9rem;background:#eff6ff;border:1px solid #dbeafe;color:#1e40af;border-radius:12px;font-size:.78rem;line-height:1.65;margin-top:.8rem}
+    .manage-modal{position:fixed;inset:0;z-index:10030;display:none;align-items:center;justify-content:center;background:rgba(15,23,42,.62);backdrop-filter:blur(6px);padding:1rem}.manage-modal.show{display:flex}.manage-dialog{background:#fff;width:min(900px,100%);max-height:92vh;overflow:auto;border-radius:22px;box-shadow:0 28px 90px rgba(0,0,0,.28)}.manage-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;padding:1.2rem 1.35rem;border-bottom:1px solid #edf1f7;position:sticky;top:0;background:#fff;z-index:2}.manage-head h2{font-size:1.12rem;color:#172033}.manage-head p{font-size:.78rem;color:#64748b;margin-top:.2rem}.manage-close{width:36px;height:36px;border:0;border-radius:11px;background:#f1f5f9;color:#334155;cursor:pointer}.manage-body{padding:1.25rem 1.35rem}.manage-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.85rem}.manage-field label{font-size:.78rem;color:#475569;margin-bottom:.35rem}.manage-field.full{grid-column:1/-1}.manage-form textarea{min-height:85px;resize:vertical}.manage-foot{display:flex;justify-content:flex-end;gap:.55rem;flex-wrap:wrap;padding:1rem 1.35rem;border-top:1px solid #edf1f7;background:#f8fafc}.timeline{border-left:2px solid #dbeafe;margin:.5rem 0 0 .35rem;padding-left:1rem}.timeline-item{position:relative;padding:0 0 .9rem}.timeline-item:before{content:'';position:absolute;left:-1.39rem;top:.3rem;width:9px;height:9px;border-radius:50%;background:#3b82f6;border:2px solid white;box-shadow:0 0 0 1px #93c5fd}.timeline-item strong{display:block;font-size:.8rem;color:#334155}.timeline-item small{display:block;font-size:.72rem;color:#94a3b8}.timeline-item p{font-size:.8rem;color:#64748b;margin-top:.2rem;white-space:pre-wrap}.evidence-preview{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem}.evidence-preview img{width:76px;height:76px;object-fit:cover;border-radius:10px;border:1px solid #e2e8f0}.ops-subtitle{font-size:.85rem;font-weight:700;color:#334155;margin:1.1rem 0 .5rem}.audit-list{max-height:230px;overflow:auto}.audit-row{display:flex;justify-content:space-between;gap:1rem;padding:.55rem 0;border-bottom:1px solid #f1f5f9;font-size:.76rem}.audit-row span{color:#64748b}.audit-row strong{color:#334155}.hotspot-list{display:flex;flex-wrap:wrap;gap:.5rem}.hotspot{padding:.45rem .65rem;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;font-size:.77rem;color:#475569}.hotspot strong{color:#1d4ed8}.modal-map{display:inline-flex;align-items:center;gap:.35rem;font-size:.75rem;color:#1d4ed8;text-decoration:none;margin-top:.45rem}.modal-map:hover{text-decoration:underline}
+    @media(max-width:800px){.ops-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.ops-tools{grid-template-columns:1fr 1fr}.ops-tools input{grid-column:1/-1}}
+    @media(max-width:520px){.ops-panel{padding:.85rem;border-radius:18px}.ops-head{display:block}.ops-actions{margin-top:.75rem}.ops-btn{flex:1}.ops-kpis{gap:.5rem}.ops-kpi{padding:.75rem}.ops-kpi strong{font-size:1.25rem}.ops-tools{grid-template-columns:1fr}.ops-tools input{grid-column:auto}.manage-form{grid-template-columns:1fr}.manage-field.full{grid-column:auto}.manage-head,.manage-body{padding:1rem}.manage-foot{padding:.85rem}}
+    @media print{.ops-panel,.manage-modal,.list-pagination,.ops-actions{display:none!important}}
+
+    </style>
+</head>
+<body>
+
+<div class="loading" id="loading">
+    <i class="fa-solid fa-circle-notch"></i>
+    <span>กำลังโหลด...</span>
+</div>
+
+<header>
+    <h1><i class="fa-solid fa-landmark-dome"></i> ฝ่ายพัฒนาชุมชนฯ สำนักงานเขตดอนเมือง</h1>
+	<p>ระบบบริหารจัดการคุณภาพชีวิตประชาชนเชิงดิจิทัล</p>
+    <p>ร่วมแจ้งปัญหา · แสดงความชื่นชม · พัฒนาบ้านเรา</p>
+    <button type="button" class="presentation-launch" onclick="openPresentation()"><i class="fa-solid fa-display"></i> เปิดโหมดนำเสนอ <i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+</header>
+
+<div class="dash-wrap">
+    <!-- การ์ดสถิติหลัก + อัปเดตล่าสุด -->
+    <div class="stat-top">
+        <div class="stat-card accent">
+            <div class="stat-label"><i class="fa-solid fa-chart-simple"></i> สถิติรวมทั้งระบบ</div>
+            <div class="stat-val" id="statTotal">0</div>
+            <div class="stat-desc">รายการทั้งหมดที่ส่งเข้ามา</div>
+            <div class="stat-small">
+                <i class="fa-solid fa-clock"></i> อัปเดตล่าสุด:
+                <span id="lastUpdate">--/--/---- --:--</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label" style="color:var(--danger)"><i class="fa-solid fa-triangle-exclamation"></i> แจ้งปัญหา</div>
+            <div class="stat-val" style="color:var(--danger)" id="statProb">0</div>
+            <div class="stat-desc">จำนวนรายการที่แจ้งปัญหา</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label" style="color:var(--success)"><i class="fa-solid fa-thumbs-up"></i> ชื่นชม</div>
+            <div class="stat-val" style="color:var(--success)" id="statGood">0</div>
+            <div class="stat-desc">จำนวนรายการที่ชื่นชม</div>
+        </div>
+    </div>
+
+    <!-- สถิติการดำเนินงาน / ปิดงาน -->
+    <section class="work-status-panel" aria-label="สถิติการดำเนินงาน">
+        <div class="work-status-heading">
+            <div>
+                <span class="eyebrow">WORK STATUS OVERVIEW</span>
+                <h2><i class="fa-solid fa-list-check"></i> สถานะการดำเนินงาน</h2>
+                <p>ติดตามความคืบหน้าและสรุปผลการจัดการเรื่องที่ประชาชนแจ้ง</p>
+            </div>
+            <div class="completion-pill"><i class="fa-solid fa-chart-line"></i> ปิดงานสำเร็จ <strong id="statClosedRate">0%</strong></div>
+        </div>
+        <div class="work-status-grid">
+            <article class="work-stat-card status-closed">
+                <div class="work-stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="work-stat-copy"><span>ปิดงานสำเร็จ</span><strong id="statClosed">0</strong><small>ดำเนินการแล้วเสร็จ</small></div>
+                <span class="status-dot"></span>
+            </article>
+            <article class="work-stat-card status-progress">
+                <div class="work-stat-icon"><i class="fa-solid fa-rotate"></i></div>
+                <div class="work-stat-copy"><span>กำลังดำเนินการ</span><strong id="statProgress">0</strong><small>ยังไม่สำเร็จ</small></div>
+                <span class="status-dot"></span>
+            </article>
+            <article class="work-stat-card status-review">
+                <div class="work-stat-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+                <div class="work-stat-copy"><span>รอตรวจสอบ</span><strong id="statReview">0</strong><small>รอประเมินและมอบหมายงาน</small></div>
+                <span class="status-dot"></span>
+            </article>
+        </div>
+        <div class="completion-track" aria-label="สัดส่วนงานที่ปิดสำเร็จ"><span id="completionBar"></span></div>
+        <div class="completion-caption"><span>ความคืบหน้าการปิดงาน</span><strong id="completionLabel">0 จาก 0 รายการ</strong></div>
+    </section>
+
+    <!-- กราฟพาย 2 อัน -->
+    <div class="chart-row">
+        <div class="chart-card">
+            <div class="chart-head">
+                <h3 class="chart-title"><i class="fa-solid fa-tags"></i> แยกตามหมวดหมู่</h3>
+            </div>
+            <div class="chart-wrap" id="catChartWrap">
+                <div class="chart-placeholder" id="catPlaceholder"><i class="fa-solid fa-chart-pie"></i> กำลังโหลดกราฟ...</div>
+                <canvas id="catPie" style="display:none;"></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-head">
+                <h3 class="chart-title"><i class="fa-solid fa-chart-pie"></i> สัดส่วนปัญหา vs ชื่นชม</h3>
+            </div>
+            <div class="chart-wrap" id="typeChartWrap">
+                <div class="chart-placeholder" id="typePlaceholder"><i class="fa-solid fa-chart-pie"></i> กำลังโหลดกราฟ...</div>
+                <canvas id="typePie" style="display:none;"></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-head"><h3 class="chart-title"><i class="fa-solid fa-chart-line"></i> แนวโน้มรับเรื่อง vs ปิดงาน (6 เดือน)</h3></div>
+            <div class="chart-wrap" id="monthlyChartWrap"><div class="chart-placeholder" id="monthlyPlaceholder"><i class="fa-solid fa-chart-line"></i> กำลังคำนวณแนวโน้ม...</div><canvas id="monthlyTrend" style="display:none"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <h3 class="sec-title"><i class="fa-solid fa-list-check"></i> เลือกหัวข้อ</h3>
+    <div class="cat-grid" id="catGrid"></div>
+
+    <div class="form-wrap" id="formBox">
+        <h3 class="form-title" id="formHead">แจ้งข้อมูล</h3>
+        <form id="f">
+            <input type="hidden" id="editIdx" value="-1">
+            <input type="hidden" id="cid" value="">
+            <div class="f-group">
+                <label>หัวข้อเรื่อง <span class="req">*</span></label>
+                <input type="text" id="topic" placeholder="เช่น ไฟถนนดับบริเวณ..." required>
+            </div>
+            <div class="f-group">
+                <label>รายละเอียด <span class="req">*</span></label>
+                <textarea id="detail" rows="3" placeholder="ระบุสถานที่และรายละเอียด..." required></textarea>
+            </div>
+            <div class="f-group">
+                <label>ตำแหน่งที่ตั้ง / พิกัด</label>
+                <div class="loc-row">
+                    <input type="text" id="location" placeholder="กดปุ่มเพื่อดึงพิกัดอัตโนมัติ หรือพิมพ์เอง">
+                    <button type="button" class="loc-btn" id="btnLoc"><i class="fa-solid fa-location-dot"></i> ดึงตำแหน่ง</button>
+                </div>
+                <p class="loc-hint">พิกัดจะแสดงในรูปแบบ ละติจูด, ลองจิจูด · กดเพื่อเปิดแผนที่</p>
+            </div>
+            <div class="f-group">
+                <label>แนบรูปภาพ (สูงสุด 5 รูป)</label>
+                <div class="up-row">
+                    <button type="button" class="up-btn cam" id="btnCam">
+                        <i class="fa-solid fa-camera"></i> ถ่ายรูป
+                    </button>
+                    <label class="up-btn gal">
+                        <i class="fa-solid fa-images"></i> เลือกจากอัลบั้ม
+                        <input type="file" id="galInp" accept="image/*" multiple>
+                    </label>
+                </div>
+                <div class="p-count" id="pCount">เลือกแล้ว 0 / 5 รูป</div>
+                <div class="p-grid" id="pGrid"></div>
+            </div>
+            <div class="f-group">
+                <label>ชื่อ-นามสกุล <span style="color:#ccc;">(ไม่บังคับ)</span></label>
+                <input type="text" id="name" placeholder="ไม่ระบุก็ได้">
+            </div>
+            <div class="f-group">
+                <label>ติดต่อ <span style="color:#ccc;">(ไม่บังคับ)</span></label>
+                <input type="text" id="contact" placeholder="เบอร์หรืออีเมล">
+            </div>
+            <div class="ticket-preview" id="ticketPreview" aria-live="polite">
+                <span class="ticket-preview-label"><i class="fa-solid fa-ticket"></i> หมายเลขรับเรื่อง</span>
+                <strong id="ticketPreviewNumber">เลือกประเภทเรื่องเพื่อแสดงหมายเลข</strong>
+                <small id="ticketPreviewHint">หมายเลขจะแสดงตามประเภทที่เลือก</small>
+            </div>
+            <div class="btn-row">
+                <button type="button" class="btn btn-back" id="btnBack"><i class="fa-solid fa-arrow-left"></i> กลับ</button>
+                <button type="submit" class="btn btn-p" id="btnSubP"><i class="fa-solid fa-triangle-exclamation"></i> แจ้งปัญหา</button>
+                <button type="submit" class="btn btn-g" id="btnSubG"><i class="fa-solid fa-thumbs-up"></i> ชื่นชม</button>
+            </div>
+        </form>
+    </div>
+
+
+    <section class="ops-panel" aria-label="ศูนย์ควบคุมการจัดการเรื่อง">
+      <div class="ops-head">
+        <div><span class="eyebrow">OPERATIONS & SERVICE QUALITY</span><h2><i class="fa-solid fa-gauge-high" style="color:#2563eb"></i> ศูนย์ควบคุมงานและรายงานผล</h2><p>ค้นหา ติดตาม SLA ตรวจสอบประวัติ และส่งออกรายงาน</p></div>
+        <div class="ops-actions">
+          <button class="ops-btn primary" type="button" onclick="exportCSV()"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+          <button class="ops-btn" type="button" onclick="downloadBackup()"><i class="fa-solid fa-download"></i> สำรองข้อมูล</button>
+          <button class="ops-btn" type="button" onclick="document.getElementById('restoreFile').click()"><i class="fa-solid fa-upload"></i> กู้คืนข้อมูล</button>
+          <button class="ops-btn" type="button" onclick="printOperationsReport()"><i class="fa-solid fa-file-pdf"></i> รายงาน / PDF</button>
+          <input type="file" id="restoreFile" accept="application/json,.json" style="display:none" onchange="restoreBackup(event)">
+        </div>
+      </div>
+      <div class="ops-kpis">
+        <article class="ops-kpi"><span><i class="fa-solid fa-stopwatch"></i> ระยะเวลาดำเนินการเฉลี่ย</span><strong id="avgResolution">—</strong><small>คำนวณจากรายการที่มีวันที่ปิดงาน</small></article>
+        <article class="ops-kpi overdue"><span><i class="fa-solid fa-bell"></i> งานเกินกำหนด</span><strong id="overdueCount">0</strong><small>เลยวันกำหนดและยังไม่ปิดงาน</small></article>
+        <article class="ops-kpi"><span><i class="fa-solid fa-user-check"></i> มีผู้รับผิดชอบ</span><strong id="assignedCount">0</strong><small>รายการที่ระบุผู้รับผิดชอบแล้ว</small></article>
+        <article class="ops-kpi"><span><i class="fa-solid fa-calendar-check"></i> ปิดงานเดือนนี้</span><strong id="closedThisMonth">0</strong><small>ปิดงานสำเร็จในเดือนปัจจุบัน</small></article>
+      </div>
+      <div class="ops-subtitle">ค้นหาและกรองรายการ</div>
+      <div class="ops-tools">
+        <input id="searchRecords" type="search" placeholder="ค้นหาเลขรับเรื่อง หัวข้อ รายละเอียด สถานที่ หรือผู้รับผิดชอบ..." aria-label="ค้นหารายการ">
+        <select id="filterStatus" aria-label="กรองตามสถานะ"><option value="all">ทุกสถานะ</option><option value="review">🟡 รอตรวจสอบ</option><option value="progress">🔴 กำลังดำเนินการ</option><option value="closed">🟢 ปิดงานสำเร็จ</option><option value="overdue">⏰ เกินกำหนด</option></select>
+        <select id="filterCategory" aria-label="กรองตามหมวดหมู่"><option value="all">ทุกหมวดหมู่</option></select>
+        <select id="filterType" aria-label="กรองตามประเภท"><option value="all">ทุกประเภท</option><option value="p">แจ้งปัญหา</option><option value="g">ชื่นชม</option></select>
+      </div>
+      <div class="ops-subtitle">หมวดหมู่ปัญหาที่พบมาก (Top 5)</div>
+      <div class="hotspot-list" id="hotspotList"><span class="hotspot">ยังไม่มีข้อมูล</span></div>
+      <div class="ops-subtitle">พื้นที่ที่มีการแจ้งเรื่อง (Top 5)</div>
+      <div class="hotspot-list" id="locationHotspots"><span class="hotspot">ยังไม่มีข้อมูลสถานที่</span></div>
+      <div class="ops-subtitle">ประวัติการดำเนินการล่าสุด</div>
+      <div class="audit-list" id="auditList"><div class="audit-row"><span>ยังไม่มีประวัติการเปลี่ยนแปลง</span></div></div>
+      <div class="ops-note"><i class="fa-solid fa-circle-info"></i> <strong>โหมดข้อมูลปัจจุบัน:</strong> บันทึกในเบราว์เซอร์เครื่องนี้ (LocalStorage) การ Export/สำรองข้อมูลช่วยเก็บข้อมูลได้ แต่ยังไม่ใช่ฐานข้อมูลกลางร่วมกันหลายเครื่อง การใช้ร่วมกันจริงต้องเชื่อม API/Google Apps Script และกำหนดสิทธิ์ฝั่งเซิร์ฟเวอร์</div>
+    </section>
+
+    <h3 class="sec-title"><i class="fa-solid fa-table-list"></i> รายการที่ส่ง</h3>
+    <div id="listBox"></div>
+    <nav class="list-pagination" id="listPagination" aria-label="เปลี่ยนหน้ารายการ" style="display:none">
+        <div class="pagination-info" id="paginationInfo">แสดง 0–0 จาก 0 รายการ</div>
+        <div class="pagination-actions" id="paginationActions"></div>
+        <label class="page-size-control">แสดงต่อหน้า
+            <select class="page-size-select" id="pageSizeSelect" aria-label="จำนวนรายการต่อหน้า">
+                <option value="10" selected>10 เรื่อง</option>
+                <option value="15">15 เรื่อง</option>
+            </select>
+        </label>
+    </nav>
+</div>
+
+
+<div class="presentation-mode" id="presentationMode" role="dialog" aria-modal="true" aria-label="โหมดนำเสนอภาพรวมคุณภาพชีวิตเขตดอนเมือง">
+  <div class="pres-shell">
+    <div class="pres-top">
+      <div class="pres-brand">
+        <div class="pres-brand-icon"><i class="fa-solid fa-landmark-dome"></i></div>
+        <div><div class="pres-eyebrow">DON MUEANG · COMMUNITY INSIGHT</div><div class="pres-title">คุณภาพชีวิตเขตดอนเมือง</div><div class="pres-subtitle">ภาพรวมเรื่องร้องเรียน การชื่นชม และผลการดำเนินงาน</div></div>
+      </div>
+      <div class="pres-actions">
+        <button class="pres-action" type="button" onclick="refreshPresentation()"><i class="fa-solid fa-arrows-rotate"></i> รีเฟรช</button>
+        <button class="pres-action" type="button" onclick="printPresentation()"><i class="fa-solid fa-file-pdf"></i> พิมพ์ / PDF</button>
+        <button class="pres-action primary" type="button" onclick="closePresentation()"><i class="fa-solid fa-xmark"></i> ปิดโหมด</button>
+      </div>
+    </div>
+    <div class="pres-kpis">
+      <article class="pres-card"><div class="pres-kpi-label"><span class="pres-kpi-icon"><i class="fa-solid fa-layer-group"></i></span> รายการทั้งหมด</div><div class="pres-kpi-value" id="presTotal">0</div><div class="pres-kpi-note">เรื่องที่บันทึกในระบบ</div></article>
+      <article class="pres-card"><div class="pres-kpi-label"><span class="pres-kpi-icon" style="color:#fda4af;background:#4a2639"><i class="fa-solid fa-triangle-exclamation"></i></span> แจ้งปัญหา</div><div class="pres-kpi-value" id="presProblems">0</div><div class="pres-kpi-note">รายการที่ต้องติดตามแก้ไข</div></article>
+      <article class="pres-card"><div class="pres-kpi-label"><span class="pres-kpi-icon" style="color:#6ee7b7;background:#17463f"><i class="fa-solid fa-circle-check"></i></span> ปิดงานสำเร็จ</div><div class="pres-kpi-value" id="presClosed">0</div><div class="pres-kpi-note">ดำเนินการแล้วเสร็จ</div></article>
+      <article class="pres-card"><div class="pres-kpi-label"><span class="pres-kpi-icon" style="color:#fcd34d;background:#4a3c20"><i class="fa-solid fa-hourglass-half"></i></span> งานคงค้าง</div><div class="pres-kpi-value" id="presPending">0</div><div class="pres-kpi-note">กำลังดำเนินการและรอตรวจสอบ</div></article>
+    </div>
+    <div class="pres-lower">
+      <section class="pres-card">
+        <h2 class="pres-section-title"><i class="fa-solid fa-chart-column" style="color:#93b4ff"></i> สรุปสถานะการดำเนินงาน</h2>
+        <div class="pres-status-row"><div class="pres-status-name"><span class="pres-dot" style="background:#34d399"></span>ปิดงานสำเร็จ</div><div class="pres-track"><div class="pres-fill" id="presClosedBar" style="width:0;background:linear-gradient(90deg,#059669,#6ee7b7)"></div></div><div class="pres-status-num" id="presClosedPct">0%</div></div>
+        <div class="pres-status-row"><div class="pres-status-name"><span class="pres-dot" style="background:#fb7185"></span>กำลังดำเนินการ</div><div class="pres-track"><div class="pres-fill" id="presProgressBar" style="width:0;background:linear-gradient(90deg,#e11d48,#fda4af)"></div></div><div class="pres-status-num" id="presProgressPct">0%</div></div>
+        <div class="pres-status-row"><div class="pres-status-name"><span class="pres-dot" style="background:#fbbf24"></span>รอตรวจสอบ</div><div class="pres-track"><div class="pres-fill" id="presReviewBar" style="width:0;background:linear-gradient(90deg,#d97706,#fcd34d)"></div></div><div class="pres-status-num" id="presReviewPct">0%</div></div>
+        <div class="pres-completion"><div><strong id="presRate">0%</strong><small>อัตราปิดงานสำเร็จจากรายการทั้งหมด</small></div><i class="fa-solid fa-chart-line" style="font-size:2rem;color:#34d399"></i></div>
+      </section>
+      <section class="pres-card">
+        <h2 class="pres-section-title"><i class="fa-solid fa-clock-rotate-left" style="color:#c4b5fd"></i> รายการล่าสุด</h2>
+        <div id="presLatest"><div style="color:#8ea2bf">ยังไม่มีรายการ</div></div>
+      </section>
+    </div>
+    <div class="pres-footer"><span><i class="fa-solid fa-shield-halved"></i> ภาพรวมเพื่อการติดตามและบริหารจัดการ</span><span>ข้อมูล ณ <strong id="presUpdatedAt">—</strong></span></div>
+  </div>
+</div>
+
+
+<div class="manage-modal" id="manageModal" role="dialog" aria-modal="true" aria-labelledby="manageTitle">
+  <div class="manage-dialog">
+    <div class="manage-head"><div><h2 id="manageTitle"><i class="fa-solid fa-clipboard-check" style="color:#2563eb"></i> จัดการงานและหลักฐาน</h2><p id="manageTicket">เลขรับเรื่อง —</p></div><button type="button" class="manage-close" onclick="closeManageModal()" aria-label="ปิด"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="manage-body">
+      <form id="manageForm" class="manage-form">
+        <input type="hidden" id="manageRecordId">
+        <div class="manage-field"><label for="manageAssignee">ผู้รับผิดชอบ / หน่วยงาน</label><input id="manageAssignee" placeholder="ชื่อเจ้าหน้าที่หรือหน่วยงาน"></div>
+        <div class="manage-field"><label for="manageDueDate">กำหนดแล้วเสร็จ (SLA)</label><input id="manageDueDate" type="date"></div>
+        <div class="manage-field full"><label for="manageResolution">ผลการดำเนินงาน / เหตุผลที่ยังไม่สำเร็จ</label><textarea id="manageResolution" placeholder="บันทึกความคืบหน้า ผลการแก้ไข หรือเหตุผลที่ต้องติดตามต่อ"></textarea></div>
+        <div class="manage-field full"><label for="manageEvidence">แนบหลักฐานหลังดำเนินการ (รูปภาพ)</label><input id="manageEvidence" type="file" accept="image/*" multiple><div class="evidence-preview" id="evidencePreview"></div><small style="color:#64748b">รูปจะถูกเก็บในเบราว์เซอร์นี้ ควรใช้รูปขนาดเหมาะสมเพื่อไม่ให้พื้นที่จัดเก็บเต็ม</small></div>
+      </form>
+      <div class="ops-subtitle">Timeline ประวัติการดำเนินงาน</div><div class="timeline" id="jobTimeline"><div class="timeline-item"><strong>สร้างรายการ</strong><small>ไม่มีประวัติ</small></div></div>
+      <div class="ops-subtitle">แผนที่และสถานที่</div><div id="manageMapLink"></div>
+    </div>
+    <div class="manage-foot"><button class="ops-btn" type="button" onclick="closeManageModal()">ยกเลิก</button><button class="ops-btn primary" type="button" onclick="saveManageDetails()"><i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลการจัดการ</button></div>
+  </div>
+</div>
+
+<div class="lb" id="lightbox" onclick="closeLB()">
+    <span class="lb-close"><i class="fa-solid fa-xmark"></i></span>
+    <img id="lbImg" alt="">
+</div>
+
+<div class="cam-modal" id="camModal">
+    <div class="cam-box">
+        <video id="camLive" autoplay playsinline muted></video>
+        <img id="camSnap" alt="">
+    </div>
+    <div class="cam-act" id="camAct">
+        <button class="a-btn a-re" id="btnRe">📷 ถ่ายใหม่</button>
+        <button class="a-btn a-use" id="btnUse">✅ ใช้รูปนี้</button>
+    </div>
+    <div class="cam-ctrl">
+        <button class="c-btn c-close" id="btnClose"><i class="fa-solid fa-xmark"></i></button>
+        <button class="c-btn c-shoot" id="btnShoot"><i class="fa-solid fa-camera"></i></button>
+        <button class="c-btn c-flip" id="btnFlip"><i class="fa-solid fa-rotate"></i></button>
+    </div>
+</div>
+
+<footer>🏘️ คุณภาพชีวิตเขตดอนเมือง · ปรับปรุงล่าสุด: ตุลาคม 2569</footer>
+
+<script>
+const MAX_PIC = 5;
+let pics = [], camStream = null, camFacing = 'environment', snap = null, curType = '';
+let catPieChart = null, typePieChart = null, monthlyChart = null, ChartLib = null;
+
+const cats = {
+    1: {n:'การเดินทาง',i:'fa-car-side',color:'#165DFF'},
+    2: {n:'การศึกษา',i:'fa-graduation-cap',color:'#722ED1'},
+    3: {n:'สาธารณสุข',i:'fa-hospital',color:'#00B42A'},
+    4: {n:'สภาพแวดล้อม',i:'fa-leaf',color:'#FF7D00'},
+    5: {n:'ความปลอดภัย',i:'fa-shield-halved',color:'#F53F3F'},
+    6: {n:'อาชีพและรายได้',i:'fa-briefcase',color:'#ECB200'},
+    7: {n:'สังคมและสวัสดิการ',i:'fa-hand-holding-heart',color:'#00B5D8'},
+    8: {n:'การบริการหน่วยงาน',i:'fa-building-columns',color:'#86909C'},
+    9: {n:'วัฒนธรรมและสันทนาการ',i:'fa-palette',color:'#E84A8F'},
+    10: {n:'อื่นๆ',i:'fa-comments',color:'#00B49A'}
+};
+
+let data = JSON.parse(localStorage.getItem('dmData') || '[]');
+let activityLog = JSON.parse(localStorage.getItem('dmActivityLog') || '[]');
+let currentManageId = null;
+let pendingEvidence = [];
+let currentListPage = 1;
+let listPageSize = 10;
+
+async function loadChartLib(){
+    if(ChartLib) return;
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js';
+    s.async = true;
+    document.head.appendChild(s);
+    await new Promise(r => { s.onload = r; s.onerror = () => r(); });
+    ChartLib = window.Chart || null;
+}
+
+function getThaiDateTime(){
+    return new Date().toLocaleString('th-TH',{
+        year:'numeric',month:'2-digit',day:'2-digit',
+        hour:'2-digit',minute:'2-digit',second:'2-digit'
+    });
+}
+
+function updateLastUpdate(){
+    document.getElementById('lastUpdate').textContent = getThaiDateTime();
+}
+
+function renderCatGrid(){
+    const c = document.getElementById('catGrid');
+    c.innerHTML = Object.entries(cats).map(([id,obj])=>{
+        const cnt = data.filter(x=>x.c==id).length;
+        return `<div class="cat-card" onclick="openForm(${id})"><div class="cat-icon"><i class="fa-solid ${obj.i}"></i></div><div class="cat-name">${escapeHTML(obj.n)}</div><div class="cat-desc">${cnt} รายการ</div></div>`;
+    }).join('');
+    const filter=document.getElementById('filterCategory');
+    if(filter && filter.options.length<=1) Object.entries(cats).forEach(([id,obj])=>filter.add(new Option(obj.n,id)));
+}
+function escapeHTML(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+function saveAllData(){localStorage.setItem('dmData',JSON.stringify(data));localStorage.setItem('dmActivityLog',JSON.stringify(activityLog.slice(0,300)));}
+function addActivity(record,action,detail=''){
+    activityLog.unshift({id:Date.now()+Math.random(),recordId:record?.id??'',ticket:record?.ticketId||'',title:record?.title||'รายการ',action,detail,at:new Date().toISOString()});
+    activityLog=activityLog.slice(0,300);localStorage.setItem('dmActivityLog',JSON.stringify(activityLog));
+}
+function maskReporterName(value){const name=String(value||'ไม่เปิดเผย').trim();if(!name||name==='ไม่เปิดเผย')return 'ไม่เปิดเผย';return name.split(/\s+/).map(part=>part.length>1?part.slice(0,1)+'•••':part).join(' ');}
+function formatDate(value){if(!value)return '—';const d=new Date(value);return isNaN(d)?String(value):d.toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'});}
+function isOverdue(record){return !!record.dueDate && record.status!=='closed' && new Date(record.dueDate+'T23:59:59')<new Date();}
+function getFilteredRecords(){
+    const q=(document.getElementById('searchRecords')?.value||'').trim().toLowerCase();
+    const status=document.getElementById('filterStatus')?.value||'all';
+    const category=document.getElementById('filterCategory')?.value||'all';
+    const type=document.getElementById('filterType')?.value||'all';
+    return data.map((record,index)=>({record,index})).filter(({record:r})=>{
+      const searchable=[r.ticketId,r.title,r.desc,r.location,r.name,r.assignee,r.resolution,r.contact].join(' ').toLowerCase();
+      if(q&&!searchable.includes(q))return false;
+      if(category!=='all'&&String(r.c)!==category)return false;
+      if(type!=='all'&&r.t!==type)return false;
+      if(status==='overdue'&&!isOverdue(r))return false;
+      if(['review','progress','closed'].includes(status)&&(r.status||'review')!==status)return false;
+      return true;
+    });
+}
+
+async function updateDash(){
+    const total = data.length;
+    const prob = data.filter(x=>x.t==='p').length;
+    const good = data.filter(x=>x.t==='g').length;
+
+    document.getElementById('statTotal').textContent = total;
+    document.getElementById('statProb').textContent = prob;
+    document.getElementById('statGood').textContent = good;
+    // Workflow KPIs apply only to complaints (DM-CMP), never compliments (DM-COM).
+    const complaints = data.filter(x=>x.t==='p');
+    const closed = complaints.filter(x=>(x.status || 'review')==='closed').length;
+    const progress = complaints.filter(x=>(x.status || 'review')==='progress').length;
+    const review = complaints.filter(x=>(x.status || 'review')==='review').length;
+    const closedRate = complaints.length ? Math.round(closed / complaints.length * 100) : 0;
+    document.getElementById('statClosed').textContent = closed;
+    document.getElementById('statProgress').textContent = progress;
+    document.getElementById('statReview').textContent = review;
+    document.getElementById('statClosedRate').textContent = closedRate + '%';
+    document.getElementById('completionBar').style.width = closedRate + '%';
+    document.getElementById('completionLabel').textContent = `${closed} จาก ${complaints.length} เรื่องร้องเรียน`;
+    updateLastUpdate();
+    updateOperationsDashboard();
+
+    if(!ChartLib) await loadChartLib();
+    if(!ChartLib){
+      ['catPlaceholder','typePlaceholder','monthlyPlaceholder'].forEach(id=>{const el=document.getElementById(id);if(el){el.style.display='flex';el.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> ไม่สามารถโหลดไลบรารีกราฟได้ แต่ข้อมูลสถิติยังแสดงได้';}});
+      return;
+    }
+
+    document.getElementById('catPlaceholder').style.display = 'none';
+    document.getElementById('typePlaceholder').style.display = 'none';
+    document.getElementById('catPie').style.display = 'block';
+    document.getElementById('typePie').style.display = 'block';
+
+    const catLabels = [], catValues = [], catColors = [];
+    Object.entries(cats).forEach(([id,obj])=>{
+        const cnt = data.filter(x=>x.c==id).length;
+        if(cnt>0){ catLabels.push(obj.n); catValues.push(cnt); catColors.push(obj.color); }
+    });
+    if(catPieChart) catPieChart.destroy();
+
+    /* ===== 3D Exploded Doughnut: ชิ้นกราฟแยกออกจากกัน + คลิกเพื่อยกชิ้นขึ้น ===== */
+    const catExploded3DPlugin = {
+        id:'catExploded3D',
+        beforeDatasetDraw(chart, args){
+            if(args.index !== 0) return;
+            const meta = chart.getDatasetMeta(0);
+            const dataset = chart.data.datasets[0];
+            const ctx = chart.ctx;
+
+            meta.data.forEach((arc, i)=>{
+                const value = Number(dataset.data[i]) || 0;
+                if(!value || !arc || !arc.outerRadius) return;
+
+                const depth = 9;
+                const layers = 8;
+                const x = arc.x, y = arc.y;
+                const outer = arc.outerRadius;
+                const inner = arc.innerRadius;
+                const start = arc.startAngle;
+                const end = arc.endAngle;
+                const base = dataset.backgroundColor[i] || '#2563eb';
+
+                ctx.save();
+                ctx.shadowColor = 'rgba(15,23,42,.20)';
+                ctx.shadowBlur = 12;
+                ctx.shadowOffsetY = 7;
+
+                for(let layer=layers; layer>=1; layer--){
+                    const yy = y + (layer/layers)*depth;
+                    ctx.beginPath();
+                    ctx.arc(x, yy, outer, start, end);
+                    ctx.arc(x, yy, inner, end, start, true);
+                    ctx.closePath();
+                    ctx.fillStyle = hexToRgba(base, .62);
+                    ctx.fill();
+                }
+                ctx.restore();
+            });
+        },
+        afterDraw(chart){
+            const meta = chart.getDatasetMeta(0);
+            if(!meta || !meta.data || !meta.data.length) return;
+
+            const total = chart.data.datasets[0].data.reduce((a,b)=>a+(Number(b)||0),0);
+            const {ctx, chartArea} = chart;
+            const cx = (chartArea.left + chartArea.right) / 2;
+            const cy = (chartArea.top + chartArea.bottom) / 2;
+
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#172033';
+            ctx.font = '700 28px Sarabun, sans-serif';
+            ctx.fillText(total.toLocaleString('th-TH'), cx, cy - 5);
+            ctx.fillStyle = '#64748b';
+            ctx.font = '500 12px Sarabun, sans-serif';
+            ctx.fillText('รายการทั้งหมด', cx, cy + 20);
+            ctx.restore();
+        }
+    };
+
+    function hexToRgba(hex, alpha){
+        const h = String(hex).replace('#','');
+        const n = parseInt(h.length===3 ? h.split('').map(x=>x+x).join('') : h,16);
+        if(Number.isNaN(n)) return `rgba(37,99,235,${alpha})`;
+        return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${alpha})`;
+    }
+
+    if(!window.__dtcpExploded3DRegistered){
+        ChartLib.register(catExploded3DPlugin);
+        window.__dtcpExploded3DRegistered = true;
+    }
+
+    const catCtx = document.getElementById('catPie').getContext('2d');
+    let catSelectedIndex = -1;
+    let catHoverIndex = -1;
+
+    catPieChart = new ChartLib(catCtx,{
+        type:'doughnut',
+        data:{
+            labels:catLabels,
+            datasets:[{
+                data:catValues,
+                backgroundColor:catColors,
+                borderColor:'#ffffff',
+                borderWidth:3,
+                borderRadius:5,
+                spacing:6,
+                offset:catValues.map(()=>7),
+                hoverOffset:0
+            }]
+        },
+        options:{
+            responsive:true,
+            maintainAspectRatio:false,
+            cutout:'51%',
+            animation:{duration:650,easing:'easeOutCubic'},
+            interaction:{mode:'nearest',intersect:true},
+            onHover:(evt, elements, chart)=>{
+                const next = elements.length ? elements[0].index : -1;
+                if(next !== catHoverIndex){
+                    catHoverIndex = next;
+                    chart.update('none');
+                }
+                chart.canvas.style.cursor = elements.length ? 'pointer' : 'default';
+            },
+            onClick:(evt, elements, chart)=>{
+                if(!elements.length) return;
+                const idx = elements[0].index;
+                catSelectedIndex = catSelectedIndex === idx ? -1 : idx;
+                chart.update();
+            },
+            plugins:{
+                legend:{
+                    position:'bottom',
+                    labels:{
+                        font:{family:'Sarabun',size:11,weight:'600'},
+                        padding:12,
+                        usePointStyle:true,
+                        pointStyle:'circle'
+                    }
+                },
+                tooltip:{
+                    callbacks:{
+                        label:(ctx)=>{
+                            const total = ctx.dataset.data.reduce((a,b)=>a+(Number(b)||0),0);
+                            const value = Number(ctx.raw)||0;
+                            const pct = total ? (value/total*100).toFixed(1) : '0.0';
+                            return ` ${ctx.label}: ${value.toLocaleString('th-TH')} รายการ (${pct}%)`;
+                        }
+                    }
+                }
+            }
+        },
+        plugins:[{
+            id:'catDynamicOffset',
+            beforeUpdate(chart){
+                const ds = chart.data.datasets[0];
+                ds.offset = ds.data.map((_,i)=>{
+                    if(i===catSelectedIndex) return 30;
+                    if(i===catHoverIndex) return 17;
+                    return 7;
+                });
+            }
+        }]
+    });
+
+    if(typePieChart) typePieChart.destroy();
+    const typeCtx = document.getElementById('typePie').getContext('2d');
+    typePieChart = new ChartLib(typeCtx,{
+        type:'pie',
+        data:{
+            labels:['แจ้งปัญหา','ชื่นชม'],
+            datasets:[{
+                data:[prob,good],
+                backgroundColor:['#F53F3F','#00B42A'],
+                borderWidth:0,
+                hoverOffset:10
+            }]
+        },
+        options:{
+            responsive:true,
+            maintainAspectRatio:false,
+            plugins:{
+                legend:{position:'bottom',labels:{font:{family:'Sarabun',size:13},padding:15,usePointStyle:true}}
+            }
+        }
+    });
+    const monthBuckets=[];const now=new Date();
+    for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);monthBuckets.push({key:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`,label:d.toLocaleDateString('th-TH',{month:'short',year:'2-digit'}),incoming:0,closed:0});}
+    data.forEach(r=>{const created=new Date(r.createdAt||Number(r.id)||Date.now());const ck=`${created.getFullYear()}-${String(created.getMonth()+1).padStart(2,'0')}`;const cb=monthBuckets.find(x=>x.key===ck);if(cb)cb.incoming++;if(r.t==='p'&&r.status==='closed'&&r.closedAt){const closedDate=new Date(r.closedAt);const dk=`${closedDate.getFullYear()}-${String(closedDate.getMonth()+1).padStart(2,'0')}`;const db=monthBuckets.find(x=>x.key===dk);if(db)db.closed++;}});
+    document.getElementById('monthlyPlaceholder').style.display='none';document.getElementById('monthlyTrend').style.display='block';
+    if(monthlyChart)monthlyChart.destroy();
+    monthlyChart=new ChartLib(document.getElementById('monthlyTrend').getContext('2d'),{type:'line',data:{labels:monthBuckets.map(x=>x.label),datasets:[{label:'รับเรื่องใหม่',data:monthBuckets.map(x=>x.incoming),borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.12)',fill:true,tension:.35},{label:'ปิดงานสำเร็จ',data:monthBuckets.map(x=>x.closed),borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.08)',fill:true,tension:.35}]},options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:'index'},plugins:{legend:{position:'bottom',labels:{font:{family:'Sarabun',size:11},usePointStyle:true}}},scales:{y:{beginAtZero:true,ticks:{precision:0}}}}});
+}
+
+function openForm(catId){
+    document.getElementById('catGrid').style.display = 'none';
+    document.getElementById('formBox').classList.add('show');
+    document.getElementById('cid').value = catId;
+    document.getElementById('formHead').textContent = 'แจ้ง: ' + cats[catId].n;
+    pics = []; snap = null; curType = '';
+    document.getElementById('editIdx').value = '-1';
+    updateTicketPreview();
+    document.getElementById('location').value = '';
+    document.getElementById('btnLoc').classList.remove('active');
+    renderPics();
+    window.scrollTo({top:0,behavior:'smooth'});
+}
+function closeForm(){
+    document.getElementById('catGrid').style.display = '';
+    document.getElementById('formBox').classList.remove('show');
+    document.getElementById('f').reset();
+    pics = []; curType = '';
+    document.getElementById('editIdx').value = '-1';
+    updateTicketPreview();
+}
+
+document.getElementById('btnLoc').addEventListener('click',()=>{
+    const btn = document.getElementById('btnLoc'), locInput = document.getElementById('location');
+    if(!navigator.geolocation){ alert('เบราว์เซอร์ไม่รองรับตำแหน่ง'); return; }
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังค้นหา...';
+    navigator.geolocation.getCurrentPosition(
+        pos=>{
+            const lat = pos.coords.latitude.toFixed(6), lng = pos.coords.longitude.toFixed(6);
+            locInput.value = `${lat}, ${lng}`;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> ได้แล้ว';
+            btn.classList.add('active');
+        },
+        err=>{ alert('ไม่สามารถดึงตำแหน่งได้: ' + err.message); btn.innerHTML = '<i class="fa-solid fa-location-dot"></i> ดึงตำแหน่ง'; },
+        {enableHighAccuracy:true,timeout:10000,maximumAge:0}
+    );
+});
+
+async function startCam(){
+    try{
+        if(camStream) stopCam();
+        camStream = await navigator.mediaDevices.getUserMedia({
+            video:{facingMode:camFacing,width:{ideal:1280},height:{ideal:720}},audio:false
+        });
+        document.getElementById('camLive').srcObject = camStream;
+        document.getElementById('camModal').classList.add('show');
+        snap = null;
+        document.getElementById('camLive').style.display = 'block';
+        document.getElementById('camSnap').style.display = 'none';
+        document.getElementById('camAct').style.display = 'none';
+    }catch(e){ alert('❌ ไม่เปิดกล้องได้\n- อนุญาตสิทธิ์กล้องในเบราว์เซอร์\n- หรือใช้ "เลือกจากอัลบั้ม" แทนครับ'); console.error(e); }
+}
+function stopCam(){ if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream = null; } document.getElementById('camModal').classList.remove('show'); }
+function flipCam(){ camFacing = camFacing==='user'?'environment':'user'; startCam(); }
+function takeSnap(){
+    const v = document.getElementById('camLive'), c = document.createElement('canvas');
+    c.width = v.videoWidth; c.height = v.videoHeight;
+    const ctx = c.getContext('2d');
+    if(camFacing==='user'){ ctx.translate(c.width,0); ctx.scale(-1,1); }
+    ctx.drawImage(v,0,0);
+    snap = c.toDataURL('image/jpeg',.85);
+    document.getElementById('camLive').style.display = 'none';
+    document.getElementById('camSnap').style.display = 'block';
+    document.getElementById('camSnap').src = snap;
+    document.getElementById('camAct').style.display = 'flex';
+}
+function useSnap(){ if(snap && pics.length<MAX_PIC){ pics.push(snap); renderPics(); } stopCam(); }
+function reSnap(){ snap = null; document.getElementById('camLive').style.display = 'block'; document.getElementById('camSnap').style.display = 'none'; document.getElementById('camAct').style.display = 'none'; }
+
+document.getElementById('galInp').addEventListener('change',e=>{
+    for(const f of e.target.files){
+        if(pics.length>=MAX_PIC) break;
+        if(!f.type.startsWith('image/')) continue;
+        const r = new FileReader();
+        r.onload = ev=>{ pics.push(ev.target.result); renderPics(); };
+        r.readAsDataURL(f);
+    }
+    e.target.value = '';
+});
+
+function renderPics(){
+    document.getElementById('pCount').textContent = `เลือกแล้ว ${pics.length} / ${MAX_PIC} รูป`;
+    document.getElementById('pGrid').innerHTML = pics.map((src,i)=>`<div class="p-item"><img src="${src}" loading="lazy" onclick="openLB('${src}')"><span class="p-num">${i+1}</span><button class="p-del" onclick="delPic(${i})"><i class="fa-solid fa-xmark"></i></button></div>`).join('');
+}
+function delPic(i){ pics.splice(i,1); renderPics(); }
+
+function openLB(src){ document.getElementById('lbImg').src = src; document.getElementById('lightbox').classList.add('show'); }
+function closeLB(){ document.getElementById('lightbox').classList.remove('show'); }
+
+document.getElementById('btnSubP').addEventListener('click',()=>{curType='p';updateTicketPreview();});
+document.getElementById('btnSubG').addEventListener('click',()=>{curType='g';updateTicketPreview();});
+document.getElementById('f').addEventListener('submit',e=>{
+    e.preventDefault();
+    if(!curType) return alert('เลือกประเภท: แจ้งปัญหา หรือ ชื่นชม');
+    updateTicketPreview();
+    const editIdx = parseInt(document.getElementById('editIdx').value);
+    const candidateTitle=document.getElementById('topic').value.trim().toLowerCase().replace(/\s+/g,' ');
+    const candidateLocation=document.getElementById('location').value.trim().toLowerCase().replace(/\s+/g,' ');
+    if(editIdx < 0){
+      const duplicate=data.find(x=>String(x.title||'').trim().toLowerCase().replace(/\s+/g,' ')===candidateTitle && candidateTitle && (!candidateLocation || candidateLocation==='-' || String(x.location||'').trim().toLowerCase().replace(/\s+/g,' ')===candidateLocation));
+      if(duplicate && !confirm(`อาจเป็นเรื่องซ้ำกับ ${duplicate.ticketId||makeTicketId(duplicate.id)}: “${duplicate.title}”\nต้องการส่งเรื่องใหม่ต่อหรือไม่?`)) return;
+    }
+    const rec = {
+        id: Date.now(),
+        ticketId: editIdx >= 0 ? (data[editIdx].ticketId || makeTicketId(data[editIdx].id, data[editIdx].t)) : makeTicketId(Date.now(), curType),
+        createdAt: editIdx >= 0 ? (data[editIdx].createdAt || new Date().toISOString()) : new Date().toISOString(),
+        c: parseInt(document.getElementById('cid').value),
+        t: curType,
+        title: document.getElementById('topic').value.trim(),
+        desc: document.getElementById('detail').value.trim(),
+        location: document.getElementById('location').value.trim() || '-',
+        name: document.getElementById('name').value.trim() || 'ไม่เปิดเผย',
+        contact: document.getElementById('contact').value.trim() || '-',
+        status: curType==='g' ? 'compliment' : (editIdx >= 0 ? (data[editIdx].status || 'review') : 'review'),
+        assignee: editIdx >= 0 ? (data[editIdx].assignee || '') : '',
+        dueDate: editIdx >= 0 ? (data[editIdx].dueDate || '') : '',
+        resolution: editIdx >= 0 ? (data[editIdx].resolution || '') : '',
+        closedAt: editIdx >= 0 ? (data[editIdx].closedAt || '') : '',
+        timeline: editIdx >= 0 ? (data[editIdx].timeline || []) : [],
+        evidence: editIdx >= 0 ? (data[editIdx].evidence || []) : [],
+        imgs: [...pics],
+        time: editIdx >= 0 ? (data[editIdx].time || new Date().toLocaleString('th-TH')) : new Date().toLocaleString('th-TH')
+    };
+    if(editIdx >= 0){
+        rec.id = data[editIdx].id;
+        rec.statusUpdatedAt=data[editIdx].statusUpdatedAt||'';
+        data[editIdx] = rec;
+        addActivity(rec,'แก้ไขข้อมูล','แก้ไขรายละเอียดรายการ');
+        alert('✅ แก้ไขข้อมูลสำเร็จ');
+    }else{
+        data.unshift(rec);
+        addActivity(rec,'รับเรื่องใหม่','สร้างเลขรับเรื่อง '+rec.ticketId);
+        currentListPage = 1;
+        alert('✅ ส่งข้อมูลสำเร็จ ขอบคุณครับ! เลขรับเรื่อง: '+rec.ticketId);
+    }
+    saveAllData();
+    closeForm();
+    renderCatGrid();
+    renderList();
+    updateDash();
+});
+
+function renderList(){
+    const b = document.getElementById('listBox');
+    const pager = document.getElementById('listPagination');
+    const filtered = getFilteredRecords();
+    if(!filtered.length){
+        b.innerHTML = `<div class="empty"><i class="fa-solid fa-inbox"></i><p>${data.length?'ไม่พบรายการที่ตรงกับตัวกรอง':'ยังไม่มีข้อมูล — เป็นคนแรกได้เลยครับ!'}</p></div>`;
+        pager.style.display = 'none';
+        return;
+    }
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / listPageSize));
+    currentListPage = Math.min(Math.max(1, currentListPage), totalPages);
+    const start = (currentListPage - 1) * listPageSize;
+    const end = Math.min(start + listPageSize, filtered.length);
+    const pageItems = filtered.slice(start, end);
+
+    b.innerHTML = pageItems.map(({record:d,index:idx})=>{
+        const isP = d.t === 'p';
+        const locHtml = d.location && d.location !== '-'
+            ? `<div class="list-loc"><i class="fa-solid fa-location-dot"></i>${d.location.includes(',')
+                ? `<a href="https://www.google.com/maps?q=${encodeURIComponent(d.location)}" target="_blank" rel="noopener">${d.location}</a>`
+                : escapeHTML(d.location)}</div>`
+            : '';
+        const imgsHtml = d.imgs?.length
+            ? `<div class="list-imgs">${d.imgs.map(src=>`<img src="${src}" loading="lazy" onclick="openLB('${src}')">`).join('')}</div>`
+            : '';
+        const ticketId=d.ticketId||makeTicketId(d.id);
+        const late=isOverdue(d);
+        const dueHtml=d.dueDate?`<span class="ticket-chip ${late?'late':(d.status==='closed'?'ok':'')}"><i class="fa-solid fa-calendar"></i> กำหนด ${formatDate(d.dueDate)}${late?' · เกินกำหนด':''}</span>`:'';
+        const assignHtml=d.assignee?`<span class="ticket-chip"><i class="fa-solid fa-user-check"></i> ${escapeHTML(d.assignee)}</span>`:'';
+
+        const status = d.status || 'review';
+        const statusMeta = {
+            closed:{label:'ปิดงานสำเร็จ',icon:'fa-circle-check',cls:'closed'},
+            progress:{label:'กำลังดำเนินการ',icon:'fa-rotate',cls:'progress'},
+            review:{label:'รอตรวจสอบ',icon:'fa-hourglass-half',cls:'review'}
+        }[status] || (d.t==='g' ? {label:'บันทึกคำชื่นชมแล้ว',icon:'fa-thumbs-up',cls:'closed'} : {label:'รอตรวจสอบ',icon:'fa-hourglass-half',cls:'review'});
+        const workflowHtml = isP ? `<div class="work-status-control">
+                <label><i class="fa-solid fa-clipboard-check"></i> สถานะงาน</label>
+                <span class="record-status-badge ${statusMeta.cls}"><i class="fa-solid ${statusMeta.icon}"></i> ${statusMeta.label}</span>
+                <select class="work-status-select" aria-label="เปลี่ยนสถานะงาน" onchange="updateWorkStatus(${idx},this.value)">
+                    <option value="review" ${status==='review'?'selected':''}>🟡 รอตรวจสอบ — ยังไม่สำเร็จ</option>
+                    <option value="progress" ${status==='progress'?'selected':''}>🔴 กำลังดำเนินการ — ยังไม่สำเร็จ</option>
+                    <option value="closed" ${status==='closed'?'selected':''}>🟢 ปิดงานสำเร็จ</option>
+                </select>
+            </div>` : `<div class="work-status-control"><span class="record-status-badge closed"><i class="fa-solid fa-thumbs-up"></i> บันทึกคำชื่นชมแล้ว</span></div>`;
+        return `<div class="list-item ${isP?'list-p':'list-g'} status-border-${statusMeta.cls}">
+            <div class="list-head">
+                <span class="list-cat"><i class="fa-solid ${cats[d.c]?.i}"></i> ${escapeHTML(cats[d.c]?.n||'อื่นๆ')}</span>
+                <span class="list-tag">${isP?'แจ้งปัญหา':'ชื่นชม'}</span>
+            </div>
+            <div class="ticket-meta"><span class="ticket-chip"><i class="fa-solid fa-ticket"></i> ${escapeHTML(ticketId)}</span><span class="ticket-chip"><i class="fa-solid fa-calendar-plus"></i> รับเรื่อง ${formatDate(d.createdAt||d.id)}</span>${dueHtml}${assignHtml}</div>
+            <div class="list-title">${escapeHTML(d.title)}</div>
+            <div class="list-desc">${escapeHTML(d.desc)}</div>
+            ${locHtml}${imgsHtml}
+            ${d.resolution?`<div class="ops-note"><strong>ผล/ความคืบหน้าล่าสุด:</strong> ${escapeHTML(d.resolution)}</div>`:''}
+            ${workflowHtml}
+            <div class="list-foot">
+                <span><i class="fa-solid fa-user-shield"></i> ${escapeHTML(maskReporterName(d.name))} · <i class="fa-solid fa-clock"></i> ${escapeHTML(d.time)}</span>
+                <span class="list-act">
+                    ${isP ? `<button class="btn-ed" onclick="openManageModal(${d.id})"><i class="fa-solid fa-clipboard-check"></i> จัดการงาน</button>` : ''}
+                    <button class="btn-ed" onclick="editRec(${idx})">แก้ไข</button>
+                    <button class="btn-del" onclick="delRec(${idx})">ลบ</button>
+                </span>
+            </div>
+        </div>`;
+    }).join('');
+
+    pager.style.display = 'flex';
+    document.getElementById('paginationInfo').innerHTML = `แสดง <strong>${start+1}–${end}</strong> จาก <strong>${filtered.length}</strong> รายการ${filtered.length!==data.length?` (ทั้งหมด ${data.length})`:''}`;
+    const actions = document.getElementById('paginationActions');
+    const pageButton = (label, page, opts={}) => `<button type="button" class="page-btn ${opts.active?'active':''}" ${opts.disabled?'disabled':''} aria-label="${opts.aria||('หน้า '+page)}" ${opts.active?'aria-current="page"':''} onclick="goToListPage(${page})">${label}</button>`;
+    let buttons = pageButton('<i class="fa-solid fa-chevron-left"></i>', currentListPage-1, {disabled:currentListPage===1,aria:'หน้าก่อนหน้า'});
+    // แสดงหมายเลขหน้าให้ครบในกรณีไม่เกิน 7 หน้า; หากมากกว่านั้น แสดงชุดหน้ารอบหน้าปัจจุบัน
+    let pages = [];
+    if(totalPages <= 7){
+        for(let p=1;p<=totalPages;p++) pages.push(p);
+    }else{
+        pages = [...new Set([1, currentListPage-1, currentListPage, currentListPage+1, totalPages].filter(p=>p>=1&&p<=totalPages))].sort((a,b)=>a-b);
+    }
+    let previous = 0;
+    pages.forEach(p=>{
+        if(p-previous>1) buttons += `<span style="padding:0 .25rem;color:#94a3b8">…</span>`;
+        buttons += pageButton(p,p,{active:p===currentListPage,aria:'หน้า '+p});
+        previous=p;
+    });
+    buttons += pageButton('<i class="fa-solid fa-chevron-right"></i>', currentListPage+1, {disabled:currentListPage===totalPages,aria:'หน้าถัดไป'});
+    actions.innerHTML = buttons;
+    document.getElementById('pageSizeSelect').value = String(listPageSize);
+}
+
+window.goToListPage = function(page){
+    const totalPages = Math.max(1, Math.ceil(getFilteredRecords().length / listPageSize));
+    currentListPage = Math.min(Math.max(1, Number(page)||1), totalPages);
+    renderList();
+    document.getElementById('listBox').scrollIntoView({behavior:'smooth',block:'start'});
+};
+
+document.getElementById('pageSizeSelect').addEventListener('change', e=>{
+    listPageSize = Number(e.target.value) === 15 ? 15 : 10;
+    currentListPage = 1;
+    renderList();
+});
+
+window.updateWorkStatus = function(idx,status){
+    if(!data[idx] || data[idx].t!=='p') return;
+    const allowed = ['review','progress','closed'];
+    if(!allowed.includes(status)) return;
+    const oldStatus=data[idx].status||'review';
+    data[idx].status = status;
+    data[idx].statusUpdatedAt = new Date().toISOString();
+    if(status==='closed')data[idx].closedAt=new Date().toISOString();
+    data[idx].timeline=data[idx].timeline||[];
+    data[idx].timeline.unshift({at:new Date().toISOString(),action:'เปลี่ยนสถานะ',detail:`${statusLabel(oldStatus)} → ${statusLabel(status)}`});
+    addActivity(data[idx],'เปลี่ยนสถานะ',`${statusLabel(oldStatus)} → ${statusLabel(status)}`);
+    saveAllData();
+    renderList();
+    updateDash();
+};
+
+window.editRec = function(idx){
+    const d = data[idx];
+    openForm(d.c);
+    document.getElementById('editIdx').value = idx;
+    document.getElementById('topic').value = d.title;
+    document.getElementById('detail').value = d.desc;
+    document.getElementById('location').value = d.location === '-' ? '' : d.location;
+    document.getElementById('name').value = d.name === 'ไม่เปิดเผย' ? '' : d.name;
+    document.getElementById('contact').value = d.contact === '-' ? '' : d.contact;
+    pics = d.imgs || [];
+    curType = d.t;
+    updateTicketPreview();
+    if(d.location && d.location !== '-') document.getElementById('btnLoc').classList.add('active');
+    renderPics();
+};
+window.delRec = function(idx){
+    if(confirm('ต้องการลบใช่ไหม?')){
+        const removed=data[idx];
+        data.splice(idx,1);
+        addActivity(removed,'ลบรายการ','ลบรายการออกจากข้อมูลในเบราว์เซอร์');
+        const maxPage = Math.max(1, Math.ceil(data.length / listPageSize));
+        currentListPage = Math.min(currentListPage, maxPage);
+        saveAllData();
+        renderCatGrid(); renderList(); updateDash();
+    }
+};
+
+document.getElementById('btnCam').addEventListener('click',startCam);
+document.getElementById('btnClose').addEventListener('click',stopCam);
+document.getElementById('btnFlip').addEventListener('click',flipCam);
+document.getElementById('btnShoot').addEventListener('click',takeSnap);
+document.getElementById('btnUse').addEventListener('click',useSnap);
+document.getElementById('btnRe').addEventListener('click',reSnap);
+document.getElementById('btnBack').addEventListener('click',closeForm);
+
+
+
+function ticketTypeCode(type){return type==='g'?'COM':'CMP';}
+function ticketYear(dateValue){const d=dateValue instanceof Date?dateValue:new Date(dateValue||Date.now());return String(d.getFullYear()+543).slice(-2);}
+function nextTicketId(type, dateValue=new Date()){
+  const code=ticketTypeCode(type), year=ticketYear(dateValue);
+  const maxSeq=data.reduce((max,r)=>{
+    const match=String(r.ticketId||'').match(/^DM-(CMP|COM)-(\d{2})-(\d{4,})$/);
+    if(match&&match[1]===code&&match[2]===year)return Math.max(max,Number(match[3])||0);
+    // Records created earlier by this version may have legacy IDs; count those of the same type/year too.
+    const created=new Date(r.createdAt||Number(r.id)||0);
+    if(!match&&r.t===type&&Number.isFinite(created.getTime())&&ticketYear(created)===year) return max+1;
+    return max;
+  },0);
+  return `DM-${code}-${year}-${String(maxSeq+1).padStart(4,'0')}`;
+}
+function makeTicketId(id,type='p'){
+  const d=new Date(Number(id)||Date.now());
+  // Preserve compatibility for records that do not yet have a type-specific ticket number.
+  return nextTicketId(type,d);
+}
+function updateTicketPreview(){
+  const number=document.getElementById('ticketPreviewNumber'),hint=document.getElementById('ticketPreviewHint'),box=document.getElementById('ticketPreview');
+  if(!number||!hint||!box)return;
+  const editIdx=parseInt(document.getElementById('editIdx')?.value??'-1',10);
+  if(editIdx>=0&&data[editIdx]){
+    number.textContent=data[editIdx].ticketId||makeTicketId(data[editIdx].id,data[editIdx].t);
+    hint.textContent='รายการเดิม · หมายเลขจะคงเดิมเมื่อแก้ไขข้อมูล';box.classList.add('editing');return;
+  }
+  box.classList.remove('editing');
+  if(!curType){number.textContent='เลือก “แจ้งปัญหา” หรือ “ชื่นชม”';hint.textContent='ระบบจะแสดงหมายเลขตัวอย่างตามประเภทที่เลือก';return;}
+  number.textContent=nextTicketId(curType,new Date());
+  hint.textContent=(curType==='g'?'Compliment · ชื่นชม':'Complaint · ร้องเรียน')+' · ตัวอย่างเลขถัดไปในเบราว์เซอร์นี้';
+}
+function statusLabel(status){return ({closed:'ปิดงานสำเร็จ',progress:'กำลังดำเนินการ',review:'รอตรวจสอบ'})[status]||'รอตรวจสอบ';}
+function updateOperationsDashboard(){
+  const now=new Date(),month=now.getMonth(),year=now.getFullYear();
+  const overdue=data.filter(isOverdue).length;
+  const assigned=data.filter(x=>(x.assignee||'').trim()).length;
+  const closedMonth=data.filter(x=>x.status==='closed'&&x.closedAt&&new Date(x.closedAt).getMonth()===month&&new Date(x.closedAt).getFullYear()===year).length;
+  const durations=data.filter(x=>x.status==='closed'&&x.createdAt&&(x.closedAt||x.statusUpdatedAt)).map(x=>(new Date(x.closedAt||x.statusUpdatedAt)-new Date(x.createdAt))/86400000).filter(n=>Number.isFinite(n)&&n>=0);
+  const avg=durations.length?(durations.reduce((a,b)=>a+b,0)/durations.length):null;
+  document.getElementById('avgResolution').textContent=avg===null?'—':avg.toLocaleString('th-TH',{maximumFractionDigits:1})+' วัน';
+  document.getElementById('overdueCount').textContent=overdue;
+  document.getElementById('assignedCount').textContent=assigned;
+  document.getElementById('closedThisMonth').textContent=closedMonth;
+  const counts=Object.entries(cats).map(([id,c])=>({id,name:c.n,count:data.filter(x=>String(x.c)===String(id)&&x.t==='p').length})).filter(x=>x.count).sort((a,b)=>b.count-a.count).slice(0,5);
+  document.getElementById('hotspotList').innerHTML=counts.length?counts.map(x=>`<span class="hotspot">${escapeHTML(x.name)} <strong>${x.count} เรื่อง</strong></span>`).join(''):'<span class="hotspot">ยังไม่มีข้อมูลแจ้งปัญหา</span>';
+  const locations={};data.filter(x=>x.location&&x.location!=='-').forEach(x=>{const key=String(x.location).trim();if(key)locations[key]=(locations[key]||0)+1;});
+  const topLocations=Object.entries(locations).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  document.getElementById('locationHotspots').innerHTML=topLocations.length?topLocations.map(([place,count])=>`<a class="hotspot" style="text-decoration:none" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place)}"><i class="fa-solid fa-location-dot"></i> ${escapeHTML(place)} <strong>${count} เรื่อง · ดูแผนที่</strong></a>`).join(''):'<span class="hotspot">ยังไม่มีข้อมูลสถานที่</span>';
+  const logs=activityLog.slice(0,8);
+  document.getElementById('auditList').innerHTML=logs.length?logs.map(x=>`<div class="audit-row"><div><strong>${escapeHTML(x.action||'อัปเดตข้อมูล')}</strong> · ${escapeHTML(x.ticket||'ไม่ระบุเลขเรื่อง')}<br><span>${escapeHTML(x.title||'รายการ')} ${x.detail?'— '+escapeHTML(x.detail):''}</span></div><span>${new Date(x.at).toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'})}</span></div>`).join(''):'<div class="audit-row"><span>ยังไม่มีประวัติการเปลี่ยนแปลง</span></div>';
+}
+['searchRecords','filterStatus','filterCategory','filterType'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener(id==='searchRecords'?'input':'change',()=>{currentListPage=1;renderList();});});
+window.openManageModal=function(id){
+  const r=data.find(x=>String(x.id)===String(id));if(!r)return;currentManageId=r.id;pendingEvidence=[...(r.evidence||[])];
+  document.getElementById('manageTicket').textContent=(r.ticketId||makeTicketId(r.id))+' · '+(r.title||'ไม่ระบุหัวข้อ');
+  document.getElementById('manageAssignee').value=r.assignee||'';document.getElementById('manageDueDate').value=r.dueDate||'';document.getElementById('manageResolution').value=r.resolution||'';document.getElementById('manageRecordId').value=r.id;
+  document.getElementById('manageEvidence').value='';renderEvidencePreview();renderTimeline(r);
+  const map=document.getElementById('manageMapLink');map.innerHTML=r.location&&r.location!=='-'?`<a class="modal-map" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.location)}" target="_blank" rel="noopener"><i class="fa-solid fa-map-location-dot"></i> เปิดตำแหน่งใน Google Maps · ${escapeHTML(r.location)}</a>`:'<span style="font-size:.8rem;color:#94a3b8">ไม่มีการระบุสถานที่หรือพิกัด</span>';
+  document.getElementById('manageModal').classList.add('show');document.body.style.overflow='hidden';
+};
+window.closeManageModal=function(){document.getElementById('manageModal').classList.remove('show');document.body.style.overflow='';currentManageId=null;pendingEvidence=[];};
+function renderTimeline(r){const items=[...(r.timeline||[])];items.push({at:r.createdAt||new Date(Number(r.id)||Date.now()).toISOString(),action:'รับเรื่องใหม่',detail:'สร้างรายการในระบบ'});items.sort((a,b)=>new Date(b.at)-new Date(a.at));document.getElementById('jobTimeline').innerHTML=items.length?items.map(x=>`<div class="timeline-item"><strong>${escapeHTML(x.action||'อัปเดต')}</strong><small>${new Date(x.at).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'})}</small><p>${escapeHTML(x.detail||'')}</p></div>`).join(''):'<div class="timeline-item"><strong>ยังไม่มีประวัติ</strong></div>';}
+function renderEvidencePreview(){document.getElementById('evidencePreview').innerHTML=pendingEvidence.map((src,i)=>`<div style="position:relative"><img src="${src}" alt="หลักฐาน ${i+1}"><button type="button" class="p-del" style="top:-5px;right:-5px" onclick="removeEvidence(${i})" aria-label="ลบรูป"><i class="fa-solid fa-xmark"></i></button></div>`).join('');}
+window.removeEvidence=function(i){pendingEvidence.splice(i,1);renderEvidencePreview();};
+document.getElementById('manageEvidence').addEventListener('change',async e=>{const files=[...e.target.files].filter(f=>f.type.startsWith('image/'));for(const file of files){if(pendingEvidence.length>=5)break;const result=await new Promise(resolve=>{const reader=new FileReader();reader.onload=ev=>resolve(ev.target.result);reader.readAsDataURL(file);});pendingEvidence.push(result);}renderEvidencePreview();e.target.value='';});
+window.saveManageDetails=function(){const r=data.find(x=>String(x.id)===String(currentManageId));if(!r)return;const oldAssignee=r.assignee||'',oldDue=r.dueDate||'',oldResolution=r.resolution||'';r.assignee=document.getElementById('manageAssignee').value.trim();r.dueDate=document.getElementById('manageDueDate').value;r.resolution=document.getElementById('manageResolution').value.trim();r.evidence=[...pendingEvidence];r.timeline=r.timeline||[];const changed=[];if(oldAssignee!==r.assignee)changed.push('ผู้รับผิดชอบ');if(oldDue!==r.dueDate)changed.push('กำหนดแล้วเสร็จ');if(oldResolution!==r.resolution)changed.push('ความคืบหน้า/ผลดำเนินงาน');changed.push('หลักฐานภาพ '+r.evidence.length+' รูป');const detail=changed.join(', ');r.timeline.unshift({at:new Date().toISOString(),action:'อัปเดตรายละเอียดงาน',detail});addActivity(r,'อัปเดตรายละเอียดงาน',detail);saveAllData();closeManageModal();renderList();updateDash();alert('บันทึกรายละเอียดงานแล้ว');};
+window.exportCSV=function(){const rows=[['เลขรับเรื่อง','วันที่รับเรื่อง','ประเภท','หมวดหมู่','หัวข้อ','รายละเอียด','สถานที่','สถานะ','ผู้รับผิดชอบ','กำหนดแล้วเสร็จ','ผลการดำเนินงาน','ชื่อผู้แจ้ง','ติดต่อ','วันที่ปิดงาน'],...data.map(r=>[r.ticketId||makeTicketId(r.id),r.time||'',r.t==='p'?'แจ้งปัญหา':'ชื่นชม',cats[r.c]?.n||'อื่นๆ',r.title||'',r.desc||'',r.location||'',statusLabel(r.status||'review'),r.assignee||'',r.dueDate||'',r.resolution||'',r.name||'',r.contact||'',r.closedAt||''])];const csv='\ufeff'+rows.map(row=>row.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');downloadBlob(csv,'donmueang-quality-of-life-'+new Date().toISOString().slice(0,10)+'.csv','text/csv;charset=utf-8;');addActivity(null,'ส่งออก CSV',`${data.length} รายการ`);updateOperationsDashboard();};
+function downloadBlob(content,name,type){const blob=new Blob([content],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+window.downloadBackup=function(){const payload={app:'DonMueangQualityOfLife',version:2,exportedAt:new Date().toISOString(),data,activityLog};downloadBlob(JSON.stringify(payload,null,2),'donmueang-backup-'+new Date().toISOString().slice(0,10)+'.json','application/json');addActivity(null,'สำรองข้อมูล',`${data.length} รายการ`);};
+window.restoreBackup=function(event){const file=event.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{try{const parsed=JSON.parse(reader.result);const incoming=Array.isArray(parsed)?parsed:parsed.data;if(!Array.isArray(incoming))throw new Error('รูปแบบไฟล์ไม่ถูกต้อง');if(!confirm(`พบข้อมูล ${incoming.length} รายการ ต้องการแทนที่ข้อมูลปัจจุบันหรือไม่? แนะนำให้สำรองข้อมูลก่อน`))return;data=incoming;activityLog=Array.isArray(parsed.activityLog)?parsed.activityLog:[];saveAllData();addActivity(null,'กู้คืนข้อมูล',`นำเข้า ${data.length} รายการจากไฟล์สำรอง`);currentListPage=1;renderCatGrid();renderList();updateDash();alert('กู้คืนข้อมูลสำเร็จ');}catch(err){alert('กู้คืนไม่สำเร็จ: '+err.message);}finally{event.target.value='';}};reader.readAsText(file);};
+window.printOperationsReport=function(){const now=new Date();const report=document.createElement('div');report.id='printOpsReport';report.innerHTML=`<div style="font-family:Sarabun,sans-serif;padding:24px;color:#172033"><h1>รายงานคุณภาพชีวิตเขตดอนเมือง</h1><p>วันที่ออกรายงาน ${now.toLocaleString('th-TH')}</p><h2>สรุปผลการดำเนินงาน</h2><p>รายการทั้งหมด ${data.length} เรื่อง | ปิดงานสำเร็จ ${data.filter(x=>x.status==='closed').length} | กำลังดำเนินการ ${data.filter(x=>x.status==='progress').length} | รอตรวจสอบ ${data.filter(x=>(x.status||'review')==='review').length} | เกินกำหนด ${data.filter(isOverdue).length}</p><table style="width:100%;border-collapse:collapse" border="1" cellpadding="6"><thead><tr><th>เลขรับเรื่อง</th><th>หัวข้อ</th><th>หมวดหมู่</th><th>สถานะ</th><th>ผู้รับผิดชอบ</th><th>กำหนด</th></tr></thead><tbody>${data.map(r=>`<tr><td>${escapeHTML(r.ticketId||makeTicketId(r.id))}</td><td>${escapeHTML(r.title||'')}</td><td>${escapeHTML(cats[r.c]?.n||'อื่นๆ')}</td><td>${escapeHTML(statusLabel(r.status||'review'))}</td><td>${escapeHTML(r.assignee||'-')}</td><td>${escapeHTML(r.dueDate||'-')}</td></tr>`).join('')}</tbody></table><p style="margin-top:18px;color:#64748b;font-size:12px">รายงานนี้สร้างจากข้อมูลในเบราว์เซอร์เครื่องปัจจุบัน</p></div>`;const old=document.getElementById('printOpsReport');if(old)old.remove();document.body.appendChild(report);document.body.classList.add('ops-printing');const style=document.createElement('style');style.id='opsPrintStyle';style.textContent='@media print{body.ops-printing>*:not(#printOpsReport){display:none!important}#printOpsReport{display:block!important}}';document.head.appendChild(style);window.print();setTimeout(()=>{document.body.classList.remove('ops-printing');report.remove();style.remove();},800);};
+document.getElementById('manageModal').addEventListener('click',e=>{if(e.target.id==='manageModal')closeManageModal();});
+
+function renderPresentation(){
+    const total=data.length;
+    const problems=data.filter(x=>x.t==='p').length;
+    const complaints=data.filter(x=>x.t==='p');
+    const closed=complaints.filter(x=>(x.status||'review')==='closed').length;
+    const progress=complaints.filter(x=>(x.status||'review')==='progress').length;
+    const review=complaints.filter(x=>(x.status||'review')==='review').length;
+    const pct=n=>problems?Math.round(n/problems*100):0;
+    const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+    set('presTotal',total.toLocaleString('th-TH'));
+    set('presProblems',problems.toLocaleString('th-TH'));
+    set('presClosed',closed.toLocaleString('th-TH'));
+    set('presPending',(progress+review).toLocaleString('th-TH'));
+    set('presClosedPct',pct(closed)+'%');set('presProgressPct',pct(progress)+'%');set('presReviewPct',pct(review)+'%');set('presRate',pct(closed)+'%');
+    [['presClosedBar',closed],['presProgressBar',progress],['presReviewBar',review]].forEach(([id,n])=>{const el=document.getElementById(id);if(el)el.style.width=pct(n)+'%';});
+    set('presUpdatedAt',new Date().toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'}));
+    const meta={closed:{label:'ปิดงานสำเร็จ',icon:'fa-circle-check',cls:'closed'},progress:{label:'กำลังดำเนินการ',icon:'fa-rotate',cls:'progress'},review:{label:'รอตรวจสอบ',icon:'fa-hourglass-half',cls:'review'}};
+    const latest=data.slice(0,5);
+    document.getElementById('presLatest').innerHTML=latest.length?latest.map(d=>{
+      const st=meta[d.status||'review']||meta.review;
+      const category=(cats[d.c]&&cats[d.c].n)||'อื่นๆ';
+      return `<div class="pres-record"><div><div class="pres-record-title">${escapePresentationText(d.title||'ไม่ระบุหัวข้อ')}</div><div class="pres-record-meta">${escapePresentationText(category)} · ${escapePresentationText(d.time||'ไม่ระบุเวลา')}</div></div><span class="pres-badge ${st.cls}"><i class="fa-solid ${st.icon}"></i>${st.label}</span></div>`;
+    }).join(''):'<div style="color:#8ea2bf;padding:10px 0">ยังไม่มีรายการในระบบ</div>';
+}
+function escapePresentationText(value){return String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+window.openPresentation=function(){renderPresentation();document.getElementById('presentationMode').classList.add('show');document.body.style.overflow='hidden';};
+window.closePresentation=function(){document.getElementById('presentationMode').classList.remove('show');document.body.style.overflow='';if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(()=>{});};
+window.refreshPresentation=function(){renderPresentation();};
+window.printPresentation=function(){renderPresentation();document.body.classList.add('presentation-print');window.print();setTimeout(()=>document.body.classList.remove('presentation-print'),500);};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePresentation();});
+
+window.addEventListener('DOMContentLoaded',async()=>{
+    data=data.map(r=>({...r,ticketId:r.ticketId||makeTicketId(r.id,r.t),createdAt:r.createdAt||new Date(Number(r.id)||Date.now()).toISOString(),timeline:r.timeline||[],evidence:r.evidence||[]}));
+    saveAllData();
+    renderCatGrid(); renderList();
+    await updateDash();
+    document.body.classList.add('loaded');
+    updateOperationsDashboard();
+    setTimeout(()=>document.getElementById('loading').style.display='none',300);
+});
+</script>
+</body>
+</html>
 
