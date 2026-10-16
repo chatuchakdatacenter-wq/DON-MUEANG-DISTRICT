@@ -429,8 +429,22 @@
     @media(max-width:400px){#formBox .up-row{grid-template-columns:1fr}}
     /* Public mode: original charts, filters, pagination, presentation retained. */
 .ops-actions,.list-act,.manage-modal{display:none!important}
-/* Keep per-ticket action dropdown visible on the public list. */
-.work-status-control .work-status-select{display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
+/* Ticket action dropdown must remain visible in the public submitted-items list. */
+#listBox .work-status-control .work-status-select{display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important;min-width:190px;min-height:40px}
+@media(max-width:600px){#listBox .work-status-control .work-status-select{width:100%}}
+
+/* Reporting dashboard: responsive daily / weekly / monthly */
+.dm-report-panel{margin:1.4rem 0;padding:1.2rem;background:#fff;border:1px solid #e2e8f0;border-radius:22px;box-shadow:0 8px 24px #0f172a0a}
+.dm-report-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem;margin-bottom:1rem}
+.dm-report-head h2{font-size:1.1rem;color:#172033}
+.dm-report-controls{display:flex;gap:.5rem;flex-wrap:wrap}
+.dm-report-controls select,.dm-report-controls input{width:auto;max-width:100%;padding:.55rem .7rem;border:1px solid #cbd5e1;border-radius:10px;background:white;font:inherit;font-size:.86rem}
+.dm-report-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.9rem}
+.dm-report-card{min-width:0;border:1px solid #e2e8f0;border-radius:16px;padding:.9rem;background:#fcfdff}
+.dm-report-card h3{font-size:.9rem;margin-bottom:.6rem}.dm-report-canvas{height:235px;position:relative}
+.dm-report-note{font-size:.8rem;color:#64748b;margin-top:.7rem}
+@media(max-width:980px){.dm-report-grid{grid-template-columns:1fr}.dm-report-canvas{height:230px}}
+@media(max-width:600px){.dm-report-panel{padding:.8rem}.dm-report-controls{width:100%}.dm-report-controls select{flex:1;min-width:130px}}
 </style>
 
 <style id="dm-unified-staff-style">
@@ -455,7 +469,7 @@
 	<p>ระบบบริหารจัดการคุณภาพชีวิตประชาชนเชิงดิจิทัล</p>
     <p>ร่วมแจ้งปัญหา · แสดงความชื่นชม · พัฒนาบ้านเรา</p>
     <button type="button" class="presentation-launch" onclick="openPresentation()"><i class="fa-solid fa-display"></i> เปิดโหมดนำเสนอ <i class="fa-solid fa-arrow-up-right-from-square"></i></button>
-<button type="button" class="presentation-launch" style="margin-left:.5rem" onclick="dmOpenStaff()"><i class="fa-solid fa-user-shield"></i> จัดการเรื่อง / ปิดงาน (Admin / User)</button>
+
 </header>
 
 <div class="dash-wrap">
@@ -637,7 +651,23 @@
       <div class="ops-note"><i class="fa-solid fa-cloud"></i> <strong>สถานะข้อมูล:</strong> <span id="cloudSyncStatus">กำลังเชื่อมต่อ Google Sheets</span><br><button class="ops-btn" type="button" onclick="syncNow()">☁️ โหลดข้อมูลล่าสุดจาก Google Sheets</button></div>
     </section>
 
+
+<section class="dm-report-panel" aria-label="รายงานสถิติรายวัน รายสัปดาห์ รายเดือน">
+  <div class="dm-report-head"><h2><i class="fa-solid fa-chart-column"></i> รายงานสถิติการรับเรื่อง</h2>
+    <div class="dm-report-controls"><label for="dmReportType" style="align-self:center;margin:0">แยกประเภท</label>
+      <select id="dmReportType"><option value="all">ทุกประเภท</option><option value="p">แจ้งปัญหา</option><option value="g">ชื่นชม</option></select>
+      <select id="dmReportCategory" aria-label="แยกหมวดหมู่"><option value="all">ทุกหมวดหมู่</option></select>
+    </div>
+  </div>
+  <div class="dm-report-grid">
+    <div class="dm-report-card"><h3 id="dmDailyTitle">สถิติประจำวัน</h3><div class="dm-report-canvas"><canvas id="dmDailyReport"></canvas></div></div>
+    <div class="dm-report-card"><h3 id="dmMonthlyTitle">สถิติประจำเดือนก่อนหน้า</h3><div class="dm-report-canvas"><canvas id="dmMonthlyReport"></canvas></div></div>
+  </div>
+  <p class="dm-report-note" id="dmReportSummary">นับตามวันที่รับเรื่องจาก Google Sheets · ใช้เวลาในประเทศไทย</p>
+</section>
+
     <h3 class="sec-title"><i class="fa-solid fa-table-list"></i> รายการที่ส่ง</h3>
+    <div class="dm-report-controls" style="margin:0 0 .8rem"><label for="dmListPeriod" style="margin:0;align-self:center">แยกรายการตามช่วงเวลา</label><select id="dmListPeriod"><option value="all">ทุกช่วงเวลา</option><option value="today">วันนี้</option><option value="week">สัปดาห์นี้</option><option value="month">เดือนนี้</option></select></div>
     <div id="listBox"></div>
     <nav class="list-pagination" id="listPagination" aria-label="เปลี่ยนหน้ารายการ" style="display:none">
         <div class="pagination-info" id="paginationInfo">แสดง 0–0 จาก 0 รายการ</div>
@@ -888,16 +918,69 @@ function addActivity(record,action,detail=''){
 function maskReporterName(value){const name=String(value||'ไม่เปิดเผย').trim();if(!name||name==='ไม่เปิดเผย')return 'ไม่เปิดเผย';return name.split(/\s+/).map(part=>part.length>1?part.slice(0,1)+'•••':part).join(' ');}
 function formatDate(value){if(!value)return '—';const d=new Date(value);return isNaN(d)?String(value):d.toLocaleDateString('th-TH',{day:'2-digit',month:'short',year:'numeric'});}
 function isOverdue(record){return !!record.dueDate && record.status!=='closed' && new Date(record.dueDate+'T23:59:59')<new Date();}
+
+// Reporting uses publicRecords already retrieved; no additional backend permissions.
+const dmReportCharts={};
+const dmBangkokParts=(value)=>{
+  const d=new Date(value);if(!Number.isFinite(d.getTime()))return null;
+  const f=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'});
+  const parts=Object.fromEntries(f.formatToParts(d).filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
+  return `${parts.year}-${parts.month}-${parts.day}`;
+};
+const dmISODate=(d)=>`${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
+function dmReportInPeriod(value,period){
+  const key=dmBangkokParts(value);if(!key)return false;
+  const today=dmBangkokParts(new Date());if(period==='today')return key===today;
+  if(period==='month')return key.slice(0,7)===today.slice(0,7);
+  if(period==='week'){
+    const d=new Date(today+'T00:00:00Z');d.setUTCDate(d.getUTCDate()-((d.getUTCDay()+6)%7));
+    return key>=dmISODate(d)&&key<=today;
+  }
+  return true;
+}
+function dmRenderReports(){
+  const select=document.getElementById('dmReportCategory');if(!select)return;
+  if(select.options.length===1){Object.entries(cats).forEach(([id,obj])=>select.add(new Option(obj.n,id)));}
+  const type=document.getElementById('dmReportType').value,cat=select.value;
+  const today=dmBangkokParts(new Date());if(!today)return;
+  const [year,month,day]=today.split('-').map(Number);
+  const previous=new Date(Date.UTC(year,month-2,1));
+  const previousKey=dmISODate(previous).slice(0,7);
+  const dayTitle=document.getElementById('dmDailyTitle'),monthTitle=document.getElementById('dmMonthlyTitle');
+  const thaiMonth=new Intl.DateTimeFormat('th-TH',{month:'long',timeZone:'Asia/Bangkok'});
+  dayTitle.textContent=`สถิติประจำวันที่ ${day} ${thaiMonth.format(new Date(Date.UTC(year,month-1,day)))} ${year+543}`;
+  monthTitle.textContent=`สถิติประจำเดือน ${thaiMonth.format(previous)} ปี ${previous.getUTCFullYear()+543}`;
+  const selected=data.filter(r=>(type==='all'||r.t===type)&&(cat==='all'||String(r.c)===cat));
+  const dayRows=selected.filter(r=>dmBangkokParts(r.createdAt)===today);
+  const monthRows=selected.filter(r=>dmBangkokParts(r.createdAt)?.slice(0,7)===previousKey);
+  const categoryName=r=>cats[r.c]?.n||'อื่น ๆ';
+  const draw=(key,id,rows,color)=>{
+    const totals=new Map();rows.forEach(r=>{const name=categoryName(r);totals.set(name,(totals.get(name)||0)+1);});
+    const entries=[...totals].sort((a,b)=>b[1]-a[1]);
+    if(dmReportCharts[key])dmReportCharts[key].destroy();
+    dmReportCharts[key]=new ChartLib(document.getElementById(id),{type:'bar',data:{labels:entries.length?entries.map(x=>x[0]):['ไม่มีรายการ'],datasets:[{label:'จำนวนรายการ',data:entries.length?entries.map(x=>x[1]):[0],backgroundColor:color,borderRadius:5,maxBarThickness:46}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y} รายการ`}}},scales:{x:{ticks:{maxRotation:35,minRotation:0,autoSkip:false}},y:{beginAtZero:true,ticks:{precision:0}}}}});
+  };
+  const summary=document.getElementById('dmReportSummary');
+  summary.textContent=`วันที่ ${day}/${month}/${year+543}: ${dayRows.length.toLocaleString('th-TH')} รายการ · เดือน ${previous.getUTCMonth()+1}/${previous.getUTCFullYear()+543}: ${monthRows.length.toLocaleString('th-TH')} รายการ · แยกตามหมวดหมู่ · เวลาไทย`;
+  if(!ChartLib){summary.textContent+=' · ไม่สามารถโหลดไลบรารีกราฟได้';return;}
+  draw('daily','dmDailyReport',dayRows,'#2563eb');
+  draw('monthly','dmMonthlyReport',monthRows,'#7c3aed');
+}
+['dmReportType','dmReportCategory'].forEach(id=>document.getElementById(id)?.addEventListener('change',dmRenderReports));
+document.getElementById('dmListPeriod')?.addEventListener('change',()=>{currentListPage=1;renderList();});
+
 function getFilteredRecords(){
     const q=(document.getElementById('searchRecords')?.value||'').trim().toLowerCase();
     const status=document.getElementById('filterStatus')?.value||'all';
     const category=document.getElementById('filterCategory')?.value||'all';
     const type=document.getElementById('filterType')?.value||'all';
+    const period=document.getElementById('dmListPeriod')?.value||'all';
     return data.map((record,index)=>({record,index})).filter(({record:r})=>{
       const searchable=[r.ticketId,r.title,r.desc,r.location,r.name,r.assignee,r.resolution,r.contact].join(' ').toLowerCase();
       if(q&&!searchable.includes(q))return false;
       if(category!=='all'&&String(r.c)!==category)return false;
       if(type!=='all'&&r.t!==type)return false;
+      if(period!=='all'&&!dmReportInPeriod(r.createdAt,period))return false;
       if(status==='overdue'&&!isOverdue(r))return false;
       if(['review','progress','closed'].includes(status)&&(r.status||'review')!==status)return false;
       return true;
@@ -928,6 +1011,7 @@ async function updateDash(){
     updateOperationsDashboard();
 
     if(!ChartLib) await loadChartLib();
+    dmRenderReports();
     if(!ChartLib){
       ['catPlaceholder','typePlaceholder','monthlyPlaceholder'].forEach(id=>{const el=document.getElementById(id);if(el){el.style.display='flex';el.innerHTML='<i class="fa-solid fa-circle-exclamation"></i> โหลดกราฟไม่สำเร็จ กรุณาตรวจอินเทอร์เน็ตแล้วรีเฟรชหน้า';}});
       return;
@@ -1337,7 +1421,7 @@ function renderList(){
         const workflowHtml = isP ? `<div class="work-status-control">
                 <label><i class="fa-solid fa-clipboard-check"></i> สถานะงาน</label>
                 <span class="record-status-badge ${statusMeta.cls}"><i class="fa-solid ${statusMeta.icon}"></i> ${statusMeta.label}</span>
-                <select class="work-status-select" aria-label="ตัวเลือกจัดการงาน" onchange="dmSelectTicketAction(this,'${ticketId}')">
+                <select class="work-status-select" aria-label="ตัวเลือกจัดการงาน" onchange="dmSelectTicketAction(this,'${escapeHTML(ticketId)}')">
                     <option value="">เลือกดำเนินการ…</option>
                     <option value="view">ดูสถานะปัจจุบัน</option>
                     ${status!=='closed'?'<option value="close">🔐 ปิดงาน (Admin)</option>':''}
@@ -1593,7 +1677,7 @@ function dmCloseStaff(){document.getElementById('dmStaffOverlay').classList.remo
   <label>Username <input name="username" autocomplete="username" required style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></label>
   <label>Password <input name="password" type="password" autocomplete="current-password" required style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></label>
   <label>ผลการดำเนินงาน <textarea name="note" maxlength="3000" rows="3" required style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></textarea></label>
-  <p style="font-size:12px;color:#64748b;margin:0">ต้องมีภาพหลังดำเนินการในระบบก่อนปิดงาน</p>
+  <p style="font-size:12px;color:#64748b;margin:0">ภาพหลังดำเนินการ (ถ้ามี) ไม่บังคับสำหรับการปิดงานโดย Admin</p>
   <p id="dmAdminCloseMessage" role="status" style="margin:0;color:#b91c1c"></p>
   <div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" onclick="dmCloseAdminDialog()" style="padding:10px">ยกเลิก</button><button id="dmAdminCloseSubmit" type="submit" style="padding:10px 18px;background:#1665d8;color:white;border:0;border-radius:8px">ยืนยันปิดงาน</button></div>
  </form>
