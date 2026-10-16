@@ -428,7 +428,9 @@
     #dmCameraHelp{font-size:.82rem;color:#64748b;margin:.45rem 0 .6rem;line-height:1.6}
     @media(max-width:400px){#formBox .up-row{grid-template-columns:1fr}}
     /* Public mode: original charts, filters, pagination, presentation retained. */
-.ops-actions,.list-act,.work-status-select,.manage-modal{display:none!important}
+.ops-actions,.list-act,.manage-modal{display:none!important}
+/* Keep per-ticket action dropdown visible on the public list. */
+.work-status-control .work-status-select{display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
 </style>
 
 <style id="dm-unified-staff-style">
