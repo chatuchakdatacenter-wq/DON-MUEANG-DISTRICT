@@ -1335,10 +1335,10 @@ function renderList(){
         const workflowHtml = isP ? `<div class="work-status-control">
                 <label><i class="fa-solid fa-clipboard-check"></i> สถานะงาน</label>
                 <span class="record-status-badge ${statusMeta.cls}"><i class="fa-solid ${statusMeta.icon}"></i> ${statusMeta.label}</span>
-                <select class="work-status-select" aria-label="เปลี่ยนสถานะงาน" onchange="updateWorkStatus(${idx},this.value)">
-                    <option value="review" ${status==='review'?'selected':''}>🟡 รอตรวจสอบ — ยังไม่สำเร็จ</option>
-                    <option value="progress" ${status==='progress'?'selected':''}>🔴 กำลังดำเนินการ — ยังไม่สำเร็จ</option>
-                    <option value="closed" ${status==='closed'?'selected':''}>🟢 ปิดงานสำเร็จ</option>
+                <select class="work-status-select" aria-label="ตัวเลือกจัดการงาน" onchange="dmSelectTicketAction(this,'${ticketId}')">
+                    <option value="">เลือกดำเนินการ…</option>
+                    <option value="view">ดูสถานะปัจจุบัน</option>
+                    ${status!=='closed'?'<option value="close">🔐 ปิดงาน (Admin)</option>':''}
                 </select>
             </div>` : `<div class="work-status-control"><span class="record-status-badge closed"><i class="fa-solid fa-thumbs-up"></i> บันทึกคำชื่นชมแล้ว</span></div>`;
         return `<div class="list-item ${isP?'list-p':'list-g'} status-border-${statusMeta.cls}">
@@ -1355,9 +1355,7 @@ function renderList(){
             <div class="list-foot">
                 <span><i class="fa-solid fa-user-shield"></i> ${escapeHTML(maskReporterName(d.name))} · <i class="fa-solid fa-clock"></i> ${escapeHTML(d.time)}</span>
                 <span class="list-act">
-                    ${isP ? `<button class="btn-ed" onclick="openManageModal(${d.id})"><i class="fa-solid fa-clipboard-check"></i> จัดการงาน</button>` : ''}
-                    <button class="btn-ed" onclick="editRec(${idx})">แก้ไข</button>
-                    <button class="btn-del" onclick="delRec(${idx})">ลบ</button>
+                    <span class="ticket-chip">จัดการผ่านเมนูด้านบน</span>
                 </span>
             </div>
         </div>`;
@@ -1584,6 +1582,47 @@ window.addEventListener('orientationchange',()=>{
 const DM_STAFF_URL='https://script.google.com/macros/s/AKfycbzMDkIJCiPxQ9OryiXUNXZXIDlcUEj-VLGhpTouI1j9lfKq2q1OKsFyiguM8aofuCC_sw/exec';
 function dmOpenStaff(){const o=document.getElementById('dmStaffOverlay'),f=document.getElementById('dmStaffFrame');if(!f.src)f.src=DM_STAFF_URL;o.classList.add('dm-visible');document.body.style.overflow='hidden';}
 function dmCloseStaff(){document.getElementById('dmStaffOverlay').classList.remove('dm-visible');document.body.style.overflow='';}
+</script>
+
+<div id="dmAdminCloseOverlay" role="dialog" aria-modal="true" aria-label="ยืนยัน Admin เพื่อปิดงาน" hidden style="position:fixed;inset:0;z-index:100000;background:#0009;align-items:center;justify-content:center;padding:16px">
+ <form id="dmAdminCloseForm" style="background:#fff;border-radius:16px;padding:24px;max-width:440px;width:100%;display:grid;gap:12px;box-shadow:0 18px 60px #0003">
+  <h3 style="margin:0">🔐 ปิดงาน — ยืนยันสิทธิ์ Admin</h3>
+  <div id="dmAdminCloseTicket" style="font-weight:bold"></div>
+  <label>Username <input name="username" autocomplete="username" required style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></label>
+  <label>Password <input name="password" type="password" autocomplete="current-password" required style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></label>
+  <label>ผลการดำเนินงาน <textarea name="note" maxlength="3000" rows="3" required style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></textarea></label>
+  <p style="font-size:12px;color:#64748b;margin:0">ต้องมีภาพหลังดำเนินการในระบบก่อนปิดงาน</p>
+  <p id="dmAdminCloseMessage" role="status" style="margin:0;color:#b91c1c"></p>
+  <div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" onclick="dmCloseAdminDialog()" style="padding:10px">ยกเลิก</button><button id="dmAdminCloseSubmit" type="submit" style="padding:10px 18px;background:#1665d8;color:white;border:0;border-radius:8px">ยืนยันปิดงาน</button></div>
+ </form>
+</div>
+<script>
+let dmClosingTicket='';
+function dmSelectTicketAction(select,id){
+ const action=select.value;select.value='';
+ if(action==='view'){alert('เลขรับเรื่อง '+id+'\nสถานะ: '+(data.find(r=>r.ticketId===id)?.status||'ไม่พบข้อมูล'));return;}
+ if(action==='close'){
+  dmClosingTicket=id;
+  document.getElementById('dmAdminCloseTicket').textContent='เลขรับเรื่อง '+id;
+  document.getElementById('dmAdminCloseMessage').textContent='';
+  document.getElementById('dmAdminCloseOverlay').hidden=false;
+  document.getElementById('dmAdminCloseOverlay').style.display='flex';
+ }
+}
+function dmCloseAdminDialog(){const o=document.getElementById('dmAdminCloseOverlay');o.hidden=true;o.style.display='none';document.getElementById('dmAdminCloseForm').reset();}
+document.getElementById('dmAdminCloseForm').addEventListener('submit',async function(e){
+ e.preventDefault();const f=e.currentTarget,btn=document.getElementById('dmAdminCloseSubmit'),msg=document.getElementById('dmAdminCloseMessage');
+ btn.disabled=true;msg.textContent='กำลังตรวจสอบสิทธิ์และบันทึก...';
+ try{
+  const nonce=dmNonce(),payload={ticketId:dmClosingTicket,username:f.elements.username.value,password:f.elements.password.value,note:f.elements.note.value};
+  await fetch(DM_API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'adminClose',nonce,payload})});
+  let receipt=null;
+  for(let i=0;i<12;i++){await new Promise(r=>setTimeout(r,1500));const x=await dmJSONP('receipt',{nonce});if(x&&!x.pending){receipt=x;break;}}
+  if(!receipt)throw Error('ยังไม่ได้รับผลยืนยัน กรุณาโหลดข้อมูลใหม่ก่อนส่งซ้ำ');
+  if(!receipt.ok)throw Error(receipt.error||'ปิดงานไม่สำเร็จ');
+  dmCloseAdminDialog();await syncNow();alert('ปิดงาน '+receipt.ticketId+' สำเร็จ');
+ }catch(err){msg.textContent=err.message;}finally{btn.disabled=false;f.elements.password.value='';}
+});
 </script>
 </body>
 </html>
