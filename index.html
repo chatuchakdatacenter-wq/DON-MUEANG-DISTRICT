@@ -420,6 +420,13 @@
     @media(max-width:520px){.ops-panel{padding:.85rem;border-radius:18px}.ops-head{display:block}.ops-actions{margin-top:.75rem}.ops-btn{flex:1}.ops-kpis{gap:.5rem}.ops-kpi{padding:.75rem}.ops-kpi strong{font-size:1.25rem}.ops-tools{grid-template-columns:1fr}.ops-tools input{grid-column:auto}.manage-form{grid-template-columns:1fr}.manage-field.full{grid-column:auto}.manage-head,.manage-body{padding:1rem}.manage-foot{padding:.85rem}}
     @media print{.ops-panel,.manage-modal,.list-pagination,.ops-actions{display:none!important}}
 
+    /* Camera UX: public report controls stay visible on desktop and mobile. */
+    .dm-category-guide{margin:0 0 1rem;padding:.85rem 1rem;border:1px solid #bfdbfe;border-radius:14px;background:#eff6ff;color:#1e40af;font-size:.9rem;line-height:1.65}
+    #formBox .up-row{display:grid!important;visibility:visible!important;opacity:1!important}
+    #formBox .up-btn{min-height:52px;font-size:.95rem}
+    #formBox .up-btn:focus-visible{outline:3px solid #2563eb;outline-offset:3px}
+    #dmCameraHelp{font-size:.82rem;color:#64748b;margin:.45rem 0 .6rem;line-height:1.6}
+    @media(max-width:400px){#formBox .up-row{grid-template-columns:1fr}}
     /* Public mode: original charts, filters, pagination, presentation retained. */
 .ops-actions,.list-act,.work-status-select,.manage-modal{display:none!important}
 </style>
@@ -522,6 +529,7 @@
 
 <div class="container">
     <h3 class="sec-title"><i class="fa-solid fa-list-check"></i> เลือกหัวข้อ</h3>
+    <p class="dm-category-guide" id="dmCategoryGuide" role="status">📷 ต้องการถ่ายภาพประกอบคำร้อง? <strong>เลือกหมวดหมู่ด้านล่างก่อน</strong> แล้วระบบจะเปิดแบบฟอร์มพร้อมปุ่มถ่ายรูปและเลือกจากอัลบั้มให้ทันที</p>
     <div class="cat-grid" id="catGrid"></div>
 
     <div class="form-wrap" id="formBox">
@@ -556,6 +564,8 @@
                         <input type="file" id="galInp" accept="image/*" multiple>
                     </label>
                 </div>
+                <input type="file" id="dmMobileCamera" accept="image/*" capture="environment" aria-label="ถ่ายรูปด้วยกล้องมือถือ" hidden>
+                <p id="dmCameraHelp">บนมือถือกด “ถ่ายรูป” เพื่อเปิดกล้อง หากไม่อนุญาตหรืออุปกรณ์ไม่รองรับ สามารถเลือกภาพจากอัลบั้มได้</p>
                 <div class="p-count" id="pCount">เลือกแล้ว 0 / 3 รูป</div>
                 <div class="p-grid" id="pGrid"></div>
             </div>
@@ -1109,11 +1119,13 @@ function openForm(catId){
     document.getElementById('location').value = '';
     document.getElementById('btnLoc').classList.remove('active');
     renderPics();
-    window.scrollTo({top:0,behavior:'smooth'});
+    document.getElementById('dmCategoryGuide').hidden = true;
+    requestAnimationFrame(()=>document.getElementById('formBox').scrollIntoView({behavior:'smooth',block:'start'}));
 }
 function closeForm(){
     document.getElementById('catGrid').style.display = '';
     document.getElementById('formBox').classList.remove('show');
+    document.getElementById('dmCategoryGuide').hidden = false;
     document.getElementById('f').reset();
     pics = []; curType = '';
     document.getElementById('editIdx').value = '-1';
@@ -1137,23 +1149,45 @@ document.getElementById('btnLoc').addEventListener('click',()=>{
 });
 
 async function startCam(){
+    if(pics.length >= MAX_PIC){alert('แนบรูปภาพครบ 3 รูปแล้ว หากต้องการเปลี่ยนรูป โปรดลบรูปเดิมก่อน');return;}
+    if(!window.isSecureContext || !navigator.mediaDevices?.getUserMedia){
+        // On mobile, capture=environment opens the native camera in supported browsers.
+        if(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){
+            document.getElementById('dmMobileCamera').click();
+        }else{
+            alert('เบราว์เซอร์นี้ไม่รองรับการเปิดกล้องโดยตรง กรุณาใช้ปุ่ม “เลือกจากอัลบั้ม” หรือเปิดเว็บไซต์ผ่าน HTTPS');
+        }
+        return;
+    }
     try{
         if(camStream) stopCam();
         camStream = await navigator.mediaDevices.getUserMedia({
-            video:{facingMode:camFacing,width:{ideal:1280},height:{ideal:720}},audio:false
+            video:{facingMode:{ideal:camFacing},width:{ideal:1280},height:{ideal:720}},audio:false
         });
-        document.getElementById('camLive').srcObject = camStream;
+        const video=document.getElementById('camLive');
+        video.srcObject=camStream;
         document.getElementById('camModal').classList.add('show');
-        snap = null;
-        document.getElementById('camLive').style.display = 'block';
-        document.getElementById('camSnap').style.display = 'none';
-        document.getElementById('camAct').style.display = 'none';
-    }catch(e){ alert('❌ ไม่เปิดกล้องได้\n- อนุญาตสิทธิ์กล้องในเบราว์เซอร์\n- หรือใช้ "เลือกจากอัลบั้ม" แทนครับ'); console.error(e); }
+        snap=null;
+        video.style.display='block';
+        document.getElementById('camSnap').style.display='none';
+        document.getElementById('camAct').style.display='none';
+        try{await video.play();}catch(_){}
+    }catch(e){
+        console.error('DM camera:',e);
+        if(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){
+            alert('ไม่สามารถเปิดกล้องภายในเว็บได้ จะลองเปิดแอปกล้องของมือถือแทน');
+            document.getElementById('dmMobileCamera').click();
+        }else{
+            const reason=e?.name==='NotAllowedError'?'เบราว์เซอร์ไม่ได้รับอนุญาตให้ใช้กล้อง':e?.name==='NotFoundError'?'ไม่พบอุปกรณ์กล้อง':e?.name==='NotReadableError'?'กล้องอาจถูกแอปอื่นใช้งานอยู่':(e?.message||'ไม่ทราบสาเหตุ');
+            alert('เปิดกล้องไม่ได้: '+reason+'\nสามารถใช้ปุ่ม “เลือกจากอัลบั้ม” เพื่อแนบภาพได้');
+        }
+    }
 }
 function stopCam(){ if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream = null; } document.getElementById('camModal').classList.remove('show'); }
 function flipCam(){ camFacing = camFacing==='user'?'environment':'user'; startCam(); }
 function takeSnap(){
     const v = document.getElementById('camLive'), c = document.createElement('canvas');
+    if(!v.videoWidth||!v.videoHeight){alert('กล้องยังไม่พร้อม กรุณารอสักครู่แล้วลองอีกครั้ง');return;}
     c.width = v.videoWidth; c.height = v.videoHeight;
     const ctx = c.getContext('2d');
     if(camFacing==='user'){ ctx.translate(c.width,0); ctx.scale(-1,1); }
@@ -1176,6 +1210,16 @@ document.getElementById('galInp').addEventListener('change',e=>{
         r.readAsDataURL(f);
     }
     e.target.value = '';
+});
+
+document.getElementById('dmMobileCamera').addEventListener('change',e=>{
+    const file=e.target.files?.[0];
+    if(file&&file.type.startsWith('image/')&&pics.length<MAX_PIC){
+        const reader=new FileReader();
+        reader.onload=ev=>{if(pics.length<MAX_PIC){pics.push(ev.target.result);renderPics();}};
+        reader.readAsDataURL(file);
+    }
+    e.target.value='';
 });
 
 function renderPics(){
