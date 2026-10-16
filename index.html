@@ -445,6 +445,7 @@
 .dm-report-note{font-size:.8rem;color:#64748b;margin-top:.7rem}
 @media(max-width:980px){.dm-report-grid{grid-template-columns:1fr}.dm-report-canvas{height:230px}}
 @media(max-width:600px){.dm-report-panel{padding:.8rem}.dm-report-controls{width:100%}.dm-report-controls select{flex:1;min-width:130px}}
+.dm-public-detail{background:#f8fafc;border:1px solid #dbeafe;border-radius:12px;padding:.75rem .9rem;margin:.7rem 0}.dm-public-detail summary{cursor:pointer;font-weight:700;color:#1d4ed8}.dm-public-detail[open] summary{margin-bottom:.5rem}
 </style>
 
 <style id="dm-unified-staff-style">
@@ -570,7 +571,7 @@
             </div>
             <div class="f-group">
                 <label>รายละเอียด <span class="req">*</span></label>
-                <textarea id="detail" rows="3" placeholder="ระบุสถานที่และรายละเอียด..." required></textarea>
+                <textarea id="detail" rows="3" placeholder="ระบุสถานที่และรายละเอียด..." required></textarea><p class="loc-hint">หัวข้อและรายละเอียดที่ไม่ใช่ข้อมูลส่วนบุคคลอาจแสดงต่อสาธารณะ กรุณาอย่าระบุชื่อ เบอร์โทร เลขบัตร หรือข้อมูลอ่อนไหวในช่องนี้</p>
             </div>
             <div class="f-group">
                 <label>ตำแหน่งที่ตั้ง / พิกัด</label>
@@ -813,7 +814,7 @@ async function syncNow(){
  try{
   const result=await dmJSONP('publicRecords');
   if(!result||!result.ok||!Array.isArray(result.records))throw Error(result?.error||'ข้อมูลตอบกลับไม่ถูกต้อง — ตรวจเวอร์ชัน Code.gs');
-  data=result.records.map((r,i)=>({id:i+1,ticketId:r.ticketId,createdAt:r.createdAt,c:Number(r.category),t:r.type,title:'รายการ '+r.ticketId,desc:'ข้อมูลรายละเอียดเก็บไว้ในระบบเจ้าหน้าที่',location:'-',name:'ไม่เปิดเผย',contact:'-',status:r.status,assignee:'',dueDate:'',resolution:'',closedAt:r.closedAt||'',time:r.createdAt?new Date(r.createdAt).toLocaleString('th-TH'):'',imgs:[],timeline:[],evidence:[]}));
+  data=result.records.map((r,i)=>({id:i+1,ticketId:r.ticketId,createdAt:r.createdAt,c:Number(r.category),t:r.type,title:r.title||'รายการ '+r.ticketId,desc:r.detail||'ไม่มีรายละเอียดที่เผยแพร่ได้',location:'-',name:'ไม่เปิดเผย',contact:'-',status:r.status,assignee:'',dueDate:'',resolution:r.resolution||'',closedAt:r.closedAt||'',time:r.createdAt?new Date(r.createdAt).toLocaleString('th-TH'):'',imgs:[],timeline:[],evidence:[]}));
   currentListPage=1;renderCatGrid();renderList();await updateDash();
   setCloudStatus('เชื่อม Google Sheets แล้ว · '+data.length+' รายการ (แสดงเฉพาะข้อมูลที่เปิดเผยได้)',true);
  }catch(e){setCloudStatus('เชื่อมต่อไม่สำเร็จ: '+e.message);throw e;}
@@ -1434,9 +1435,9 @@ function renderList(){
             </div>
             <div class="ticket-meta"><span class="ticket-chip"><i class="fa-solid fa-ticket"></i> ${escapeHTML(ticketId)}</span><span class="ticket-chip"><i class="fa-solid fa-calendar-plus"></i> รับเรื่อง ${formatDate(d.createdAt||d.id)}</span>${dueHtml}${assignHtml}</div>
             <div class="list-title">${escapeHTML(d.title)}</div>
-            <div class="list-desc">${escapeHTML(d.desc)}</div>
+            <details class="dm-public-detail"><summary><i class="fa-solid fa-circle-info"></i> ดูรายละเอียด / ติดตามสถานะ</summary><div class="list-desc" style="margin-top:.7rem">${escapeHTML(d.desc)}</div>${d.resolution?`<div class="ops-note"><strong>ผลการดำเนินงาน:</strong> ${escapeHTML(d.resolution)}</div>`:''}<div style="color:#64748b;font-size:.8rem;margin-top:.5rem">สถานะปัจจุบัน: ${escapeHTML(statusMeta.label)}</div></details>
             ${locHtml}${imgsHtml}
-            ${d.resolution?`<div class="ops-note"><strong>ผล/ความคืบหน้าล่าสุด:</strong> ${escapeHTML(d.resolution)}</div>`:''}
+
             ${workflowHtml}
             <div class="list-foot">
                 <span><i class="fa-solid fa-user-shield"></i> ${escapeHTML(maskReporterName(d.name))} · <i class="fa-solid fa-clock"></i> ${escapeHTML(d.time)}</span>
