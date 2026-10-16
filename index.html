@@ -546,7 +546,7 @@
                 <p class="loc-hint">พิกัดจะแสดงในรูปแบบ ละติจูด, ลองจิจูด · กดเพื่อเปิดแผนที่</p>
             </div>
             <div class="f-group">
-                <label>แนบรูปภาพ (ยังไม่เปิดใช้งาน)</label><p class="loc-hint">ขณะนี้ระบบรับข้อความและพิกัดได้แล้ว การส่งรูปภาพไป Google Drive จะเปิดใช้เมื่อจัดการสิทธิ์และพื้นที่เก็บไฟล์เสร็จ</p>
+                <label>แนบรูปภาพประกอบคำร้อง (สูงสุด 3 รูป)</label><p class="loc-hint">ระบบจะย่อรูปก่อนส่งและเก็บหลักฐานใน Google Drive เฉพาะเจ้าหน้าที่</p>
                 <div class="up-row">
                     <button type="button" class="up-btn cam" id="btnCam">
                         <i class="fa-solid fa-camera"></i> ถ่ายรูป
@@ -556,7 +556,7 @@
                         <input type="file" id="galInp" accept="image/*" multiple>
                     </label>
                 </div>
-                <div class="p-count" id="pCount">เลือกแล้ว 0 / 5 รูป</div>
+                <div class="p-count" id="pCount">เลือกแล้ว 0 / 3 รูป</div>
                 <div class="p-grid" id="pGrid"></div>
             </div>
             <div class="f-group">
@@ -708,7 +708,7 @@
 <footer>🏘️ คุณภาพชีวิตเขตดอนเมือง · ปรับปรุงล่าสุด: ตุลาคม 2569</footer>
 
 <script>
-const MAX_PIC = 5;
+const MAX_PIC = 3;
 let pics = [], camStream = null, camFacing = 'environment', snap = null, curType = '';
 let catPieChart = null, typePieChart = null, monthlyChart = null, ChartLib = null;
 
@@ -773,10 +773,11 @@ function dmNonce(){
 async function dmSubmitPublic(e){
  e.preventDefault();e.stopImmediatePropagation();
  if(!curType){alert('กรุณาเลือก แจ้งปัญหา หรือ ชื่นชม');return;}
- if(pics.length){alert('เวอร์ชันนี้ยังไม่รองรับการส่งรูปภาพไป Google Drive กรุณาลบรูปก่อนส่งเรื่อง');return;}
+ 
  const category=Number(document.getElementById('cid').value);
  const payload={type:curType,category,title:document.getElementById('topic').value.trim(),detail:document.getElementById('detail').value.trim(),location:document.getElementById('location').value.trim(),reporterName:document.getElementById('name').value.trim(),reporterContact:document.getElementById('contact').value.trim()};
  if(!payload.title||!payload.detail){alert('กรุณากรอกหัวข้อและรายละเอียด');return;}
+ try{payload.images=await dmCompressPublicPics(pics);}catch(err){alert('ไม่สามารถเตรียมรูปภาพ: '+err.message);return;}
  const buttons=['btnSubP','btnSubG'].map(id=>document.getElementById(id));
  buttons.forEach(b=>b.disabled=true);
  const nonce=dmNonce();
@@ -793,11 +794,18 @@ async function dmSubmitPublic(e){
    if(result&&!result.ok)throw Error(result.error||'บันทึกไม่สำเร็จ');
   }
   if(!receipt){setCloudStatus('ยังยืนยันผลการบันทึกไม่ได้ กรุณาติดต่อเจ้าหน้าที่ก่อนส่งซ้ำ');alert('ส่งคำขอแล้ว แต่ยังยืนยันเลขรับเรื่องไม่ได้ กรุณาอย่าส่งซ้ำทันที');return;}
-  alert('บันทึกสำเร็จ เลขรับเรื่อง: '+receipt.ticketId);
+  try{localStorage.setItem('dmSurvey_'+receipt.ticketId,nonce);}catch(_){}
+  alert('บันทึกสำเร็จ เลขรับเรื่อง: '+receipt.ticketId+'\nรหัสประเมินส่วนตัว: '+nonce+'\nโปรดเก็บรหัสนี้ไว้เพื่อประเมินหลังปิดงาน'+(receipt.imageWarning?'\n'+receipt.imageWarning:''));
+  pics=[];renderPics();
   document.getElementById('f').reset();closeForm();
   try{await syncNow();}catch(_){}
  }catch(err){setCloudStatus('การส่งเรื่องมีปัญหา: '+err.message);alert('ยังยืนยันการรับเรื่องไม่ได้: '+err.message+'\nกรุณาตรวจสอบก่อนส่งซ้ำ');}
  finally{buttons.forEach(b=>b.disabled=false);}
+}
+async function dmCompressPublicPics(srcs){
+ if(srcs.length>3)throw Error('แนบภาพได้สูงสุด 3 ภาพ');
+ const out=[];
+ for(const src of srcs){const img=new Image();img.src=src;await img.decode();const canvas=document.createElement('canvas');const ratio=Math.min(1,960/Math.max(img.naturalWidth,img.naturalHeight));canvas.width=Math.max(1,Math.round(img.naturalWidth*ratio));canvas.height=Math.max(1,Math.round(img.naturalHeight*ratio));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);let quality=.65,result=canvas.toDataURL('image/jpeg',quality);while(result.length>900000&&quality>.3){quality-=.1;result=canvas.toDataURL('image/jpeg',quality);}if(result.length>900000)throw Error('รูปภาพมีขนาดใหญ่เกินไป');out.push(result);}return out;
 }
 // Capture listener runs before legacy localStorage submission handler.
 document.getElementById('f').addEventListener('submit',dmSubmitPublic,true);
@@ -1507,6 +1515,9 @@ window.addEventListener('resize',()=>{
 window.addEventListener('orientationchange',()=>{
   setTimeout(()=>[catPieChart,typePieChart,monthlyChart].forEach(chart=>{if(chart)chart.resize();}),350);
 });
+</script>
+<section id="dmSatisfactionSection" style="max-width:820px;margin:30px auto;padding:24px;background:white;border-radius:18px;box-shadow:0 8px 30px #152b4a15;font-family:inherit"><h2 style="margin:0 0 8px">⭐ ประเมินความพึงพอใจหลังปิดงาน</h2><p>สำหรับผู้แจ้งเรื่องที่ได้รับการปิดงานแล้ว ใช้เลขรับเรื่องจากการส่งคำร้องบนอุปกรณ์เดิม หรือกรอกรหัสประเมินที่ได้รับไว้</p><form id="dmSatForm" style="display:grid;gap:12px"><label>เลขรับเรื่อง<input id="dmSatId" required placeholder="DM-20261016-00003" style="display:block;width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></label><label>รหัสประเมินส่วนตัว<input id="dmSatToken" required placeholder="รหัสที่บันทึกไว้เมื่อส่งเรื่อง" style="display:block;width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></label><label>ความพึงพอใจ <select id="dmSatRating" required style="padding:10px"><option value="">เลือกคะแนน</option><option value="5">⭐⭐⭐⭐⭐ มากที่สุด</option><option value="4">⭐⭐⭐⭐ มาก</option><option value="3">⭐⭐⭐ ปานกลาง</option><option value="2">⭐⭐ น้อย</option><option value="1">⭐ น้อยที่สุด</option></select></label><label>ผลการแก้ไข <select id="dmSatResolved"><option value="yes">แก้ไขแล้ว</option><option value="partial">แก้ไขบางส่วน</option><option value="no">ยังไม่ได้รับการแก้ไข (ส่งหัวหน้าพิจารณา)</option></select></label><label>ความรวดเร็ว <select id="dmSatSpeed"><option value="good">รวดเร็วเหมาะสม</option><option value="normal">พอใช้</option><option value="slow">ล่าช้า</option></select></label><label>ข้อเสนอแนะ<textarea id="dmSatComment" maxlength="1000" rows="2" style="display:block;width:100%;border:1px solid #cbd5e1;border-radius:8px"></textarea></label><button id="dmSatSubmit" type="submit" style="background:#1764e8;color:white;border:0;border-radius:10px;padding:12px;cursor:pointer">ส่งผลประเมิน</button><p id="dmSatMsg" role="status"></p></form></section><script>
+(function(){const form=document.getElementById('dmSatForm'),id=document.getElementById('dmSatId'),token=document.getElementById('dmSatToken'),msg=document.getElementById('dmSatMsg');id.addEventListener('change',()=>{try{token.value=localStorage.getItem('dmSurvey_'+id.value.trim())||token.value;}catch(_){}});form.addEventListener('submit',async e=>{e.preventDefault();const btn=document.getElementById('dmSatSubmit');btn.disabled=true;msg.textContent='กำลังบันทึกผลประเมิน...';try{const nonce=dmNonce(),payload={ticketId:id.value.trim(),token:token.value.trim(),rating:Number(document.getElementById('dmSatRating').value),resolved:document.getElementById('dmSatResolved').value,speed:document.getElementById('dmSatSpeed').value,comment:document.getElementById('dmSatComment').value};await fetch(DM_API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'submitSatisfaction',nonce,payload})});let receipt;for(let i=0;i<12;i++){await new Promise(r=>setTimeout(r,1500));const x=await dmJSONP('receipt',{nonce});if(x?.ok&&!x.pending){receipt=x;break;}if(x&&!x.ok)throw Error(x.error||'ไม่สำเร็จ');}if(!receipt)throw Error('ยังยืนยันผลไม่ได้ โปรดอย่าส่งซ้ำ');msg.textContent='ขอบคุณสำหรับการประเมิน ระบบบันทึกแล้ว';form.reset();}catch(err){msg.textContent='ไม่สามารถบันทึก: '+err.message;}finally{btn.disabled=false;}});})();
 </script>
 </body>
 </html>
