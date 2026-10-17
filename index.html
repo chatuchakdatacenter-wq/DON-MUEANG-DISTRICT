@@ -129,6 +129,17 @@
         .list-loc a{color:var(--primary);text-decoration:underline}
         .list-imgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:.5rem;margin:.5rem 0}
         .list-imgs img{width:100%;height:70px;object-fit:cover;border-radius:var(--radius-sm);cursor:pointer;border:1px solid #eee}
+        .dm-evidence-btn{display:inline-flex;align-items:center;gap:.45rem;border:1px solid #cbd5e1;background:#fff;padding:.45rem .7rem;border-radius:10px;color:#1d4ed8;font-weight:700;cursor:pointer;margin:.55rem 0 .15rem}
+        .dm-evidence-summary{display:flex;gap:.45rem;flex-wrap:wrap;margin:.35rem 0 .65rem}
+        .dm-evidence-chip{font-size:.76rem;padding:.25rem .55rem;border-radius:999px;background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe}
+        .dm-evidence-chip.after{background:#f0fdf4;color:#047857;border-color:#bbf7d0}
+        #dmEvidenceModal{position:fixed;inset:0;z-index:2147483600;background:#000b;display:none;align-items:center;justify-content:center;padding:16px}
+        #dmEvidenceModal.dm-show{display:flex}
+        #dmEvidencePanel{width:min(1000px,96vw);height:min(86vh,760px);background:#f8fafc;border-radius:18px;overflow:hidden;box-shadow:0 24px 80px #0008;display:flex;flex-direction:column}
+        #dmEvidenceHead{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#0f172a;color:#fff}
+        #dmEvidenceBody{flex:1;overflow:hidden;background:#e2e8f0}
+        #dmEvidenceFrame{width:100%;height:100%;border:0;background:#fff}
+
         .list-foot{font-size:.8rem;color:#aaa;margin-top:.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem}
         .list-act button{font-size:.75rem;padding:.25rem .5rem;border:none;border-radius:6px;cursor:pointer;margin-left:.3rem}
         .btn-ed{background:var(--w-light);color:var(--warn)}
@@ -814,7 +825,7 @@ async function syncNow(){
  try{
   const result=await dmJSONP('publicRecords');
   if(!result||!result.ok||!Array.isArray(result.records))throw Error(result?.error||'ข้อมูลตอบกลับไม่ถูกต้อง — ตรวจเวอร์ชัน Code.gs');
-  data=result.records.map((r,i)=>({id:i+1,ticketId:r.ticketId,createdAt:r.createdAt,c:Number(r.category),t:r.type,title:r.title||'รายการ '+r.ticketId,desc:r.detail||'ไม่มีรายละเอียดที่เผยแพร่ได้',location:'-',name:'ไม่เปิดเผย',contact:'-',status:r.status,assignee:'',dueDate:'',resolution:r.resolution||'',closedAt:r.closedAt||'',time:r.createdAt?new Date(r.createdAt).toLocaleString('th-TH'):'',imgs:[],timeline:[],evidence:[]}));
+  data=result.records.map((r,i)=>({id:i+1,ticketId:r.ticketId,createdAt:r.createdAt,c:Number(r.category),t:r.type,title:r.title||'รายการ '+r.ticketId,desc:r.detail||'ไม่มีรายละเอียดที่เผยแพร่ได้',location:'-',name:'ไม่เปิดเผย',contact:'-',status:r.status,assignee:'',dueDate:'',resolution:r.resolution||'',closedAt:r.closedAt||'',time:r.createdAt?new Date(r.createdAt).toLocaleString('th-TH'):'',imgs:[],timeline:[],evidence:[],beforeCount:Number(r.beforeCount)||0,afterCount:Number(r.afterCount)||0,evidenceToken:r.evidenceToken||''}));
   currentListPage=1;renderCatGrid();renderList();await updateDash();
   setCloudStatus('เชื่อม Google Sheets แล้ว · '+data.length+' รายการ (แสดงเฉพาะข้อมูลที่เปิดเผยได้)',true);
  }catch(e){setCloudStatus('เชื่อมต่อไม่สำเร็จ: '+e.message);throw e;}
@@ -1409,6 +1420,10 @@ function renderList(){
             ? `<div class="list-imgs">${d.imgs.map(src=>`<img src="${src}" loading="lazy" onclick="openLB('${src}')">`).join('')}</div>`
             : '';
         const ticketId=d.ticketId||makeTicketId(d.id);
+        const beforeCount=Number(d.beforeCount)||0, afterCount=Number(d.afterCount)||0;
+        const evidenceHtml=(beforeCount||afterCount)
+            ? `<div class="dm-evidence-summary"><span class="dm-evidence-chip">BEFORE · ${beforeCount} รูป</span><span class="dm-evidence-chip after">AFTER · ${afterCount} รูป</span></div><button type="button" class="dm-evidence-btn" onclick="dmOpenEvidence('${escapeHTML(ticketId)}','${escapeHTML(d.evidenceToken||'')}')"><i class="fa-solid fa-images"></i> ดูภาพ Before / After</button>`
+            : '';
         const late=isOverdue(d);
         const dueHtml=d.dueDate?`<span class="ticket-chip ${late?'late':(d.status==='closed'?'ok':'')}"><i class="fa-solid fa-calendar"></i> กำหนด ${formatDate(d.dueDate)}${late?' · เกินกำหนด':''}</span>`:'';
         const assignHtml=d.assignee?`<span class="ticket-chip"><i class="fa-solid fa-user-check"></i> ${escapeHTML(d.assignee)}</span>`:'';
@@ -1436,7 +1451,7 @@ function renderList(){
             <div class="ticket-meta"><span class="ticket-chip"><i class="fa-solid fa-ticket"></i> ${escapeHTML(ticketId)}</span><span class="ticket-chip"><i class="fa-solid fa-calendar-plus"></i> รับเรื่อง ${formatDate(d.createdAt||d.id)}</span>${dueHtml}${assignHtml}</div>
             <div class="list-title">${escapeHTML(d.title)}</div>
             <details class="dm-public-detail"><summary><i class="fa-solid fa-circle-info"></i> ดูรายละเอียด / ติดตามสถานะ</summary><div class="list-desc" style="margin-top:.7rem">${escapeHTML(d.desc)}</div>${d.resolution?`<div class="ops-note"><strong>ผลการดำเนินงาน:</strong> ${escapeHTML(d.resolution)}</div>`:''}<div style="color:#64748b;font-size:.8rem;margin-top:.5rem">สถานะปัจจุบัน: ${escapeHTML(statusMeta.label)}</div></details>
-            ${locHtml}${imgsHtml}
+            ${locHtml}${imgsHtml}${evidenceHtml}
 
             ${workflowHtml}
             <div class="list-foot">
@@ -1660,6 +1675,13 @@ window.addEventListener('orientationchange',()=>{
 (function(){const form=document.getElementById('dmSatForm'),id=document.getElementById('dmSatId'),token=document.getElementById('dmSatToken'),msg=document.getElementById('dmSatMsg');id.addEventListener('change',()=>{try{token.value=localStorage.getItem('dmSurvey_'+id.value.trim())||token.value;}catch(_){}});form.addEventListener('submit',async e=>{e.preventDefault();const btn=document.getElementById('dmSatSubmit');btn.disabled=true;msg.textContent='กำลังบันทึกผลประเมิน...';try{const nonce=dmNonce(),payload={ticketId:id.value.trim(),token:token.value.trim(),rating:Number(document.getElementById('dmSatRating').value),resolved:document.getElementById('dmSatResolved').value,speed:document.getElementById('dmSatSpeed').value,comment:document.getElementById('dmSatComment').value};await fetch(DM_API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'submitSatisfaction',nonce,payload})});let receipt;for(let i=0;i<12;i++){await new Promise(r=>setTimeout(r,1500));const x=await dmJSONP('receipt',{nonce});if(x?.ok&&!x.pending){receipt=x;break;}if(x&&!x.ok)throw Error(x.error||'ไม่สำเร็จ');}if(!receipt)throw Error('ยังยืนยันผลไม่ได้ โปรดอย่าส่งซ้ำ');msg.textContent='ขอบคุณสำหรับการประเมิน ระบบบันทึกแล้ว';form.reset();}catch(err){msg.textContent='ไม่สามารถบันทึก: '+err.message;}finally{btn.disabled=false;}});})();
 </script>
 
+<div id="dmEvidenceModal" role="dialog" aria-modal="true" aria-label="ภาพหลักฐาน" onclick="if(event.target===this)dmCloseEvidence()">
+  <div id="dmEvidencePanel">
+    <div id="dmEvidenceHead"><strong id="dmEvidenceTitle">📷 ภาพหลักฐาน</strong><button type="button" onclick="dmCloseEvidence()" style="border:0;background:#fff;color:#0f172a;border-radius:8px;padding:7px 12px;cursor:pointer;font-weight:700">ปิด ✕</button></div>
+    <div id="dmEvidenceBody"><iframe id="dmEvidenceFrame" title="ภาพหลักฐาน Before / After"></iframe></div>
+  </div>
+</div>
+
 <div id="dmStaffOverlay" role="dialog" aria-modal="true" aria-label="ระบบเจ้าหน้าที่">
   <div id="dmStaffTop"><strong>DM SMART COMMUNITY · จัดการเรื่องร้องเรียน</strong><div style="display:flex;gap:8px;flex-wrap:wrap"><a href="https://script.google.com/macros/s/AKfycbzMDkIJCiPxQ9OryiXUNXZXIDlcUEj-VLGhpTouI1j9lfKq2q1OKsFyiguM8aofuCC_sw/exec" target="_blank" rel="noopener noreferrer">เปิดหน้าจัดการแยก (กรณี Google ไม่แสดง)</a><button type="button" onclick="dmCloseStaff()">กลับหน้าหลัก ✕</button></div></div>
   <div id="dmStaffHint">เข้าสู่ระบบด้วย Google · ปุ่มปิดงานแสดงเฉพาะ Admin · ระบบตรวจสิทธิ์ก่อนบันทึก</div>
@@ -1671,37 +1693,149 @@ function dmOpenStaff(){const o=document.getElementById('dmStaffOverlay'),f=docum
 function dmCloseStaff(){document.getElementById('dmStaffOverlay').classList.remove('dm-visible');document.body.style.overflow='';}
 </script>
 
-<div id="dmAdminCloseOverlay" role="dialog" aria-modal="true" aria-label="ยืนยัน Admin เพื่อปิดงาน" hidden style="position:fixed;inset:0;z-index:100000;background:#0009;align-items:center;justify-content:center;padding:16px">
- <form id="dmAdminCloseForm" style="background:#fff;border-radius:16px;padding:24px;max-width:440px;width:100%;display:grid;gap:12px;box-shadow:0 18px 60px #0003">
+<div id="dmAdminCloseOverlay" role="dialog" aria-modal="true" aria-label="ยืนยัน Admin เพื่อปิดงาน" hidden style="position:fixed;inset:0;z-index:100000;background:#0009;align-items:center;justify-content:center;padding:16px;overflow:auto">
+ <form id="dmAdminCloseForm" style="background:#fff;border-radius:18px;padding:24px;max-width:520px;width:100%;display:grid;gap:12px;box-shadow:0 18px 60px #0003">
   <h3 style="margin:0">🔐 ปิดงาน — ยืนยันสิทธิ์ Admin</h3>
-  <div id="dmAdminCloseTicket" style="font-weight:bold"></div>
+  <div id="dmAdminCloseTicket" style="font-weight:bold;color:#1d4ed8"></div>
   <label>Username <input name="username" autocomplete="username" required style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></label>
   <label>Password <input name="password" type="password" autocomplete="current-password" required style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></label>
-  <label>ผลการดำเนินงาน <textarea name="note" maxlength="3000" rows="3" required style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></textarea></label>
-  <p style="font-size:12px;color:#64748b;margin:0">ภาพหลังดำเนินการ (ถ้ามี) ไม่บังคับสำหรับการปิดงานโดย Admin</p>
-  <p id="dmAdminCloseMessage" role="status" style="margin:0;color:#b91c1c"></p>
-  <div style="display:flex;gap:8px;justify-content:flex-end"><button type="button" onclick="dmCloseAdminDialog()" style="padding:10px">ยกเลิก</button><button id="dmAdminCloseSubmit" type="submit" style="padding:10px 18px;background:#1665d8;color:white;border:0;border-radius:8px">ยืนยันปิดงาน</button></div>
+  <label>ผลการดำเนินงาน <textarea name="note" maxlength="3000" rows="3" required placeholder="ระบุผลการดำเนินงานที่ได้ดำเนินการแล้ว..." style="width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></textarea></label>
+
+  <div style="border:1px solid #dbe5f1;background:#f8fbff;border-radius:14px;padding:14px">
+   <div style="font-weight:700;color:#1e3a8a;margin-bottom:6px">📷 ภาพยืนยันหลังดำเนินการ <span style="color:#dc2626">*</span></div>
+   <div style="font-size:12px;color:#64748b;margin-bottom:10px">กรุณาแนบภาพอย่างน้อย 1 ภาพ และแนบได้สูงสุด 3 ภาพ เพื่อใช้เป็นหลักฐานประกอบการปิดงาน</div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <label for="dmAdminCloseCamera" style="margin:0;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;border:1px solid #fecaca;border-radius:10px;background:#fff1f2;color:#be123c;font-weight:700;cursor:pointer">
+      <i class="fa-solid fa-camera"></i> ถ่ายภาพ
+    </label>
+    <label for="dmAdminCloseGallery" style="margin:0;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;border:1px solid #bbf7d0;border-radius:10px;background:#f0fdf4;color:#047857;font-weight:700;cursor:pointer">
+      <i class="fa-solid fa-images"></i> เลือกจากอัลบั้ม
+    </label>
+   </div>
+   <input id="dmAdminCloseCamera" type="file" accept="image/*" capture="environment" hidden>
+   <input id="dmAdminCloseGallery" type="file" accept="image/*" multiple hidden>
+   <div id="dmAdminClosePhotoCount" style="font-size:12px;color:#64748b;margin-top:9px">เลือกแล้ว 0 / 3 รูป</div>
+   <div id="dmAdminClosePhotoGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px"></div>
+  </div>
+
+  <p id="dmAdminCloseMessage" role="status" aria-live="polite" style="margin:0;color:#b91c1c;line-height:1.5"></p>
+  <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+   <button type="button" onclick="dmCloseAdminDialog()" style="padding:10px 16px;border:1px solid #cbd5e1;background:#fff;border-radius:9px;cursor:pointer">ยกเลิก</button>
+   <button id="dmAdminCloseSubmit" type="submit" style="padding:10px 18px;background:#1665d8;color:white;border:0;border-radius:9px;cursor:pointer;font-weight:700">ยืนยันปิดงาน</button>
+  </div>
  </form>
 </div>
 <script>
+function dmOpenEvidence(ticketId,token){
+ const modal=document.getElementById('dmEvidenceModal'),frame=document.getElementById('dmEvidenceFrame'),title=document.getElementById('dmEvidenceTitle');
+ if(!modal||!frame)return;
+ title.textContent='📷 ภาพหลักฐาน · '+ticketId;
+ frame.src=DM_API_URL+'?action=evidenceView&ticketId='+encodeURIComponent(ticketId)+'&token='+encodeURIComponent(token)+'&view=all';
+ modal.classList.add('dm-show');
+}
+function dmCloseEvidence(){
+ const modal=document.getElementById('dmEvidenceModal'),frame=document.getElementById('dmEvidenceFrame');
+ if(modal)modal.classList.remove('dm-show');
+ if(frame)frame.src='about:blank';
+}
 let dmClosingTicket='';
+let dmAdminClosePics=[];
+
 function dmSelectTicketAction(select,id){
  const action=select.value;select.value='';
  if(action==='view'){alert('เลขรับเรื่อง '+id+'\nสถานะ: '+(data.find(r=>r.ticketId===id)?.status||'ไม่พบข้อมูล'));return;}
  if(action==='close'){
   dmClosingTicket=id;
+  dmAdminClosePics=[];
   document.getElementById('dmAdminCloseTicket').textContent='เลขรับเรื่อง '+id;
   document.getElementById('dmAdminCloseMessage').textContent='';
   document.getElementById('dmAdminCloseOverlay').hidden=false;
   document.getElementById('dmAdminCloseOverlay').style.display='flex';
+  dmRenderAdminClosePics();
  }
 }
-function dmCloseAdminDialog(){const o=document.getElementById('dmAdminCloseOverlay');o.hidden=true;o.style.display='none';document.getElementById('dmAdminCloseForm').reset();}
-document.getElementById('dmAdminCloseForm').addEventListener('submit',async function(e){
- e.preventDefault();const f=e.currentTarget,btn=document.getElementById('dmAdminCloseSubmit'),msg=document.getElementById('dmAdminCloseMessage');
- btn.disabled=true;msg.textContent='กำลังตรวจสอบสิทธิ์และบันทึก...';
+
+function dmRenderAdminClosePics(){
+ const grid=document.getElementById('dmAdminClosePhotoGrid');
+ const count=document.getElementById('dmAdminClosePhotoCount');
+ if(!grid||!count)return;
+ count.textContent='เลือกแล้ว '+dmAdminClosePics.length+' / 3 รูป';
+ grid.innerHTML=dmAdminClosePics.map((src,i)=>'<div style="position:relative;aspect-ratio:1/1;border-radius:10px;overflow:hidden;border:1px solid #dbe5f1;background:#eef2f7"><img src="'+src+'" alt="ภาพยืนยัน '+(i+1)+'" style="width:100%;height:100%;object-fit:cover"><button type="button" data-admin-photo-index="'+i+'" aria-label="ลบภาพที่ '+(i+1)+'" style="position:absolute;top:4px;right:4px;width:25px;height:25px;border:0;border-radius:50%;background:#000b;color:#fff;cursor:pointer">×</button><span style="position:absolute;bottom:4px;left:4px;background:#000b;color:#fff;font-size:11px;padding:1px 6px;border-radius:8px">'+(i+1)+'</span></div>').join('');
+ grid.querySelectorAll('[data-admin-photo-index]').forEach(btn=>btn.addEventListener('click',()=>{
+   const index=Number(btn.dataset.adminPhotoIndex);
+   dmAdminClosePics.splice(index,1);
+   dmRenderAdminClosePics();
+ }));
+}
+
+function dmReadAdminCloseFile(file){
+ return new Promise((resolve,reject)=>{
+   if(!file||!file.type.startsWith('image/')){reject(Error('ไฟล์ที่เลือกไม่ใช่รูปภาพ'));return;}
+   const reader=new FileReader();
+   reader.onload=async e=>{
+     try{
+       const img=new Image();
+       img.src=e.target.result;
+       await img.decode();
+       const canvas=document.createElement('canvas');
+       const ratio=Math.min(1,960/Math.max(img.naturalWidth,img.naturalHeight));
+       canvas.width=Math.max(1,Math.round(img.naturalWidth*ratio));
+       canvas.height=Math.max(1,Math.round(img.naturalHeight*ratio));
+       canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+       let quality=.65,result=canvas.toDataURL('image/jpeg',quality);
+       while(result.length>900000&&quality>.3){quality-=.1;result=canvas.toDataURL('image/jpeg',quality);}
+       if(result.length>900000)throw Error('รูปภาพมีขนาดใหญ่เกินไป');
+       resolve(result);
+     }catch(err){reject(err);}
+   };
+   reader.onerror=()=>reject(Error('อ่านไฟล์รูปภาพไม่สำเร็จ'));
+   reader.readAsDataURL(file);
+ });
+}
+
+async function dmAddAdminCloseFiles(fileList){
+ const files=[...fileList||[]].filter(f=>f&&f.type.startsWith('image/'));
+ if(!files.length)return;
+ const room=3-dmAdminClosePics.length;
+ if(room<=0){alert('แนบภาพได้สูงสุด 3 ภาพ');return;}
+ const selected=files.slice(0,room);
+ const msg=document.getElementById('dmAdminCloseMessage');
+ msg.textContent='กำลังเตรียมภาพ...';
  try{
-  const nonce=dmNonce(),payload={ticketId:dmClosingTicket,username:f.elements.username.value,password:f.elements.password.value,note:f.elements.note.value};
+   for(const file of selected)dmAdminClosePics.push(await dmReadAdminCloseFile(file));
+   dmRenderAdminClosePics();
+   msg.textContent='';
+ }catch(err){
+   msg.textContent='ไม่สามารถเตรียมรูปภาพ: '+err.message;
+ }
+}
+
+document.getElementById('dmAdminCloseGallery').addEventListener('change',async e=>{
+ await dmAddAdminCloseFiles(e.target.files);
+ e.target.value='';
+});
+document.getElementById('dmAdminCloseCamera').addEventListener('change',async e=>{
+ await dmAddAdminCloseFiles(e.target.files);
+ e.target.value='';
+});
+
+function dmCloseAdminDialog(){
+ const o=document.getElementById('dmAdminCloseOverlay');
+ o.hidden=true;o.style.display='none';
+ document.getElementById('dmAdminCloseForm').reset();
+ dmAdminClosePics=[];
+ dmRenderAdminClosePics();
+ document.getElementById('dmAdminCloseMessage').textContent='';
+}
+
+document.getElementById('dmAdminCloseForm').addEventListener('submit',async function(e){
+ e.preventDefault();
+ const f=e.currentTarget,btn=document.getElementById('dmAdminCloseSubmit'),msg=document.getElementById('dmAdminCloseMessage');
+ if(!dmClosingTicket){msg.textContent='ไม่พบเลขรับเรื่อง';return;}
+ if(dmAdminClosePics.length<1){msg.textContent='กรุณาแนบภาพหลังดำเนินการอย่างน้อย 1 ภาพก่อนปิดงาน';return;}
+ btn.disabled=true;msg.textContent='กำลังตรวจสอบสิทธิ์ บันทึกภาพหลักฐาน และปิดงาน...';
+ try{
+  const nonce=dmNonce(),payload={ticketId:dmClosingTicket,username:f.elements.username.value,password:f.elements.password.value,note:f.elements.note.value,images:dmAdminClosePics};
   await fetch(DM_API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'adminClose',nonce,payload})});
   let receipt=null;
   for(let i=0;i<12;i++){await new Promise(r=>setTimeout(r,1500));const x=await dmJSONP('receipt',{nonce});if(x&&!x.pending){receipt=x;break;}}
