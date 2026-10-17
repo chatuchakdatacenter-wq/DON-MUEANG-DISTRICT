@@ -825,7 +825,7 @@ async function syncNow(){
  try{
   const result=await dmJSONP('publicRecords');
   if(!result||!result.ok||!Array.isArray(result.records))throw Error(result?.error||'ข้อมูลตอบกลับไม่ถูกต้อง — ตรวจเวอร์ชัน Code.gs');
-  data=result.records.map((r,i)=>({id:i+1,ticketId:r.ticketId,createdAt:r.createdAt,c:Number(r.category),t:r.type,title:r.title||'รายการ '+r.ticketId,desc:r.detail||'ไม่มีรายละเอียดที่เผยแพร่ได้',location:'-',name:'ไม่เปิดเผย',contact:'-',status:r.status,assignee:'',dueDate:'',resolution:r.resolution||'',closedAt:r.closedAt||'',time:r.createdAt?new Date(r.createdAt).toLocaleString('th-TH'):'',imgs:[],timeline:[],evidence:[],beforeCount:Number(r.beforeCount)||0,afterCount:Number(r.afterCount)||0,evidenceToken:r.evidenceToken||''}));
+  data=result.records.map((r,i)=>({id:i+1,ticketId:r.ticketId,createdAt:r.createdAt,c:Number(r.category),t:r.type,title:r.title||'รายการ '+r.ticketId,desc:r.detail||'ไม่มีรายละเอียดที่เผยแพร่ได้',location:r.location||'',name:'ไม่เปิดเผย',contact:'-',status:r.status,assignee:'',dueDate:'',resolution:r.resolution||'',closedAt:r.closedAt||'',time:r.createdAt?new Date(r.createdAt).toLocaleString('th-TH'):'',imgs:[],timeline:[],evidence:[],beforeCount:Number(r.beforeCount)||0,afterCount:Number(r.afterCount)||0,evidenceToken:r.evidenceToken||''}));
   currentListPage=1;renderCatGrid();renderList();await updateDash();
   setCloudStatus('เชื่อม Google Sheets แล้ว · '+data.length+' รายการ (แสดงเฉพาะข้อมูลที่เปิดเผยได้)',true);
  }catch(e){setCloudStatus('เชื่อมต่อไม่สำเร็จ: '+e.message);throw e;}
@@ -1411,10 +1411,13 @@ function renderList(){
 
     b.innerHTML = pageItems.map(({record:d,index:idx})=>{
         const isP = d.t === 'p';
-        const locHtml = d.location && d.location !== '-'
-            ? `<div class="list-loc"><i class="fa-solid fa-location-dot"></i>${d.location.includes(',')
-                ? `<a href="https://www.google.com/maps?q=${encodeURIComponent(d.location)}" target="_blank" rel="noopener">${d.location}</a>`
-                : escapeHTML(d.location)}</div>`
+        const rawLocation = String(d.location || '').trim();
+        const coordMatch = rawLocation.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
+        const mapUrl = coordMatch
+            ? `https://www.google.com/maps?q=${encodeURIComponent(coordMatch[1]+','+coordMatch[2])}`
+            : ( /^https?:\/\//i.test(rawLocation) ? rawLocation : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(rawLocation)}` );
+        const locHtml = rawLocation && rawLocation !== '-'
+            ? `<div class="list-loc"><i class="fa-solid fa-location-dot"></i><span><strong>พิกัด / Location:</strong> </span><a href="${escapeHTML(mapUrl)}" target="_blank" rel="noopener noreferrer">${escapeHTML(rawLocation)}</a><a href="${escapeHTML(mapUrl)}" target="_blank" rel="noopener noreferrer" aria-label="เปิดตำแหน่งใน Google Maps" title="เปิดใน Google Maps"><i class="fa-solid fa-arrow-up-right-from-square"></i> เปิดแผนที่</a></div>`
             : '';
         const imgsHtml = d.imgs?.length
             ? `<div class="list-imgs">${d.imgs.map(src=>`<img src="${src}" loading="lazy" onclick="openLB('${src}')">`).join('')}</div>`
@@ -1422,7 +1425,7 @@ function renderList(){
         const ticketId=d.ticketId||makeTicketId(d.id);
         const beforeCount=Number(d.beforeCount)||0, afterCount=Number(d.afterCount)||0;
         const evidenceHtml=(beforeCount||afterCount)
-            ? `<div class="dm-evidence-summary"><span class="dm-evidence-chip">BEFORE · ${beforeCount} รูป</span><span class="dm-evidence-chip after">AFTER · ${afterCount} รูป</span></div><button type="button" class="dm-evidence-btn" onclick="dmOpenEvidence('${escapeHTML(ticketId)}','${escapeHTML(d.evidenceToken||'')}')"><i class="fa-solid fa-images"></i> ดูภาพ Before / After</button>`
+            ? `<div class="dm-evidence-summary"><span class="dm-evidence-chip"><i class="fa-regular fa-image"></i> ภาพประกอบ ${beforeCount} รูป</span>${afterCount?`<span class="dm-evidence-chip after">ภาพหลังดำเนินการ ${afterCount} รูป</span>`:''}</div><button type="button" class="dm-evidence-btn" onclick="dmOpenEvidence('${escapeHTML(ticketId)}','${escapeHTML(d.evidenceToken||'')}')"><i class="fa-solid fa-images"></i> เปิดดูรูปภาพ</button>`
             : '';
         const late=isOverdue(d);
         const dueHtml=d.dueDate?`<span class="ticket-chip ${late?'late':(d.status==='closed'?'ok':'')}"><i class="fa-solid fa-calendar"></i> กำหนด ${formatDate(d.dueDate)}${late?' · เกินกำหนด':''}</span>`:'';
@@ -1451,7 +1454,7 @@ function renderList(){
             <div class="ticket-meta"><span class="ticket-chip"><i class="fa-solid fa-ticket"></i> ${escapeHTML(ticketId)}</span><span class="ticket-chip"><i class="fa-solid fa-calendar-plus"></i> รับเรื่อง ${formatDate(d.createdAt||d.id)}</span>${dueHtml}${assignHtml}</div>
             <div class="list-title">${escapeHTML(d.title)}</div>
             <details class="dm-public-detail"><summary><i class="fa-solid fa-circle-info"></i> ดูรายละเอียด / ติดตามสถานะ</summary><div class="list-desc" style="margin-top:.7rem">${escapeHTML(d.desc)}</div>${d.resolution?`<div class="ops-note"><strong>ผลการดำเนินงาน:</strong> ${escapeHTML(d.resolution)}</div>`:''}<div style="color:#64748b;font-size:.8rem;margin-top:.5rem">สถานะปัจจุบัน: ${escapeHTML(statusMeta.label)}</div></details>
-            ${locHtml}${imgsHtml}${evidenceHtml}
+            ${evidenceHtml}${locHtml}${imgsHtml}
 
             ${workflowHtml}
             <div class="list-foot">
