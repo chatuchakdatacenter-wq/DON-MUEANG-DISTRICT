@@ -502,6 +502,15 @@
 .dm-comparison-empty{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px}
 @media(max-width:500px){.dm-comparison-grid{gap:7px}.dm-comparison-heading{font-size:11px;padding:8px 5px}.dm-comparison-open iframe,.dm-comparison-empty{aspect-ratio:4/3}.dm-comparison-open>span{font-size:10px}}
 </style>
+<style id="dm-3d-category-icons">
+/* DON MUEANG: illustrated category icons, images located in assets/ */
+#catGrid .cat-icon{width:90px;height:90px;border-radius:20px;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
+#catGrid .cat-icon .dm-category-image{display:block;width:100%;height:100%;object-fit:contain;object-position:center;}
+#catGrid .cat-icon .dm-category-image[hidden],#catGrid .cat-icon i[hidden]{display:none!important;}
+#catGrid .cat-icon i:not([hidden]){font-size:32px;}
+@media(max-width:700px){#catGrid .cat-icon{width:72px;height:72px;border-radius:16px;margin-bottom:9px;}}
+@media(max-width:360px){#catGrid .cat-icon{width:78px;height:78px;}}
+</style>
 </head>
 <body>
 
@@ -812,16 +821,16 @@ let pics = [], camStream = null, camFacing = 'environment', snap = null, curType
 let catPieChart = null, typePieChart = null, monthlyChart = null, ChartLib = null;
 
 const cats = {
-    1: {n:'การเดินทาง',i:'fa-car-side',color:'#165DFF'},
-    2: {n:'การศึกษา',i:'fa-graduation-cap',color:'#722ED1'},
-    3: {n:'สาธารณสุข',i:'fa-hospital',color:'#00B42A'},
-    4: {n:'สภาพแวดล้อม',i:'fa-leaf',color:'#FF7D00'},
-    5: {n:'ความปลอดภัย',i:'fa-shield-halved',color:'#F53F3F'},
-    6: {n:'อาชีพและรายได้',i:'fa-briefcase',color:'#ECB200'},
-    7: {n:'สังคมและสวัสดิการ',i:'fa-hand-holding-heart',color:'#00B5D8'},
-    8: {n:'การบริการหน่วยงาน',i:'fa-building-columns',color:'#86909C'},
-    9: {n:'วัฒนธรรมและสันทนาการ',i:'fa-palette',color:'#E84A8F'},
-    10: {n:'อื่นๆ',i:'fa-comments',color:'#00B49A'}
+    1: {n:'การเดินทาง',i:'fa-car-side',color:'#165DFF',img:'assets/travel.png'},
+    2: {n:'การศึกษา',i:'fa-graduation-cap',color:'#722ED1',img:'assets/education.png'},
+    3: {n:'สาธารณสุข',i:'fa-hospital',color:'#00B42A',img:'assets/health.png'},
+    4: {n:'สภาพแวดล้อม',i:'fa-leaf',color:'#FF7D00',img:'assets/environment.png'},
+    5: {n:'ความปลอดภัย',i:'fa-shield-halved',color:'#F53F3F',img:'assets/safety.png'},
+    6: {n:'อาชีพและรายได้',i:'fa-briefcase',color:'#ECB200',img:'assets/career.png'},
+    7: {n:'สังคมและสวัสดิการ',i:'fa-hand-holding-heart',color:'#00B5D8',img:'assets/welfare.png'},
+    8: {n:'การบริการหน่วยงาน',i:'fa-building-columns',color:'#86909C',img:'assets/government.png'},
+    9: {n:'วัฒนธรรมและสันทนาการ',i:'fa-palette',color:'#E84A8F',img:'assets/culture.png'},
+    10: {n:'อื่นๆ',i:'fa-comments',color:'#00B49A',img:'assets/other.png'}
 };
 
 // ใส่ URL ของ Google Apps Script Web App หลัง Deploy แล้ว
@@ -987,7 +996,7 @@ function renderCatGrid(){
     const c = document.getElementById('catGrid');
     c.innerHTML = Object.entries(cats).map(([id,obj])=>{
         const cnt = data.filter(x=>x.c==id).length;
-        return `<div class="cat-card" onclick="openForm(${id})"><div class="cat-icon"><i class="fa-solid ${obj.i}"></i></div><div class="cat-name">${escapeHTML(obj.n)}</div><div class="cat-desc">${cnt} รายการ</div></div>`;
+        return `<div class="cat-card" onclick="openForm(${id})"><div class="cat-icon"><img class="dm-category-image" src="${obj.img}" alt="${escapeHTML(obj.n)}" loading="lazy" decoding="async" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><i class="fa-solid ${obj.i}" hidden></i></div><div class="cat-name">${escapeHTML(obj.n)}</div><div class="cat-desc">${cnt} รายการ</div></div>`;
     }).join('');
     const filter=document.getElementById('filterCategory');
     if(filter && filter.options.length<=1) Object.entries(cats).forEach(([id,obj])=>filter.add(new Option(obj.n,id)));
