@@ -531,7 +531,13 @@
 #new3dKpi .new3d-legend{margin:10px auto;gap:10px 16px}
 #new3dKpi .new3d-legend span{font-size:.86rem}
 @media(max-width:600px){#new3dKpi .new3d-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}#new3dKpi .new3d-tab{font-size:.76rem;padding:10px 5px}#new3dKpi .new3d-chart{height:240px}#new3dKpi .new3d-chart svg{height:235px;width:235px}#new3dKpi .new3d-card h3{font-size:1rem}#new3dKpi .new3d-legend span{font-size:.74rem}}
-</style><style id="dm-new-survey-css">.dm-star-picker{display:flex;justify-content:center;gap:5px}.dm-star-picker button{border:0;background:transparent;color:#eab308;font-size:clamp(2rem,7vw,3rem);cursor:pointer;min-width:44px;min-height:48px}.dm-star-picker button:focus-visible{outline:2px solid #2563eb;border-radius:8px}#dmSatId{padding:10px;border:1px solid #cbd5e1;border-radius:8px}</style></head>
+</style><style id="dm-new-survey-css">.dm-star-picker{display:flex;justify-content:center;gap:5px}.dm-star-picker button{border:0;background:transparent;color:#eab308;font-size:clamp(2rem,7vw,3rem);cursor:pointer;min-width:44px;min-height:48px}.dm-star-picker button:focus-visible{outline:2px solid #2563eb;border-radius:8px}#dmSatId{padding:10px;border:1px solid #cbd5e1;border-radius:8px}</style><style id="dm-category-badges-and-evaluated-filter">
+#catGrid .cat-icon{position:relative;overflow:visible!important;isolation:isolate}
+#catGrid .cat-icon .dm-category-image{border-radius:inherit}
+#catGrid .dm-cat-alert{position:absolute;top:-9px;right:-11px;z-index:3;display:flex;align-items:center;justify-content:center;min-width:25px;height:25px;padding:0 6px;border-radius:999px;background:linear-gradient(135deg,#ff334c,#d80d29);border:2px solid #fff;box-shadow:0 3px 9px #be123c5c;color:#fff;font-size:12px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;pointer-events:none}
+#catGrid .dm-cat-alert[hidden]{display:none!important}
+@media(max-width:700px){#catGrid .dm-cat-alert{min-width:23px;height:23px;top:-8px;right:-8px;font-size:11px}}
+</style></head>
 <body>
 
 <div class="loading" id="loading">
@@ -714,7 +720,7 @@
       <div class="ops-subtitle">ค้นหาและกรองรายการ (ข้อมูลสาธารณะ ไม่แสดงชื่อ/เบอร์/รายละเอียดส่วนบุคคล)</div>
       <div class="ops-tools">
         <input id="searchRecords" type="search" placeholder="ค้นหาเลขรับเรื่อง..." aria-label="ค้นหารายการ">
-        <select id="filterStatus" aria-label="กรองตามสถานะ"><option value="all">ทุกสถานะ</option><option value="review">🟡 รอตรวจสอบ</option><option value="progress">🔴 กำลังดำเนินการ</option><option value="closed">🟢 ปิดงานสำเร็จ</option><option value="overdue">⏰ เกินกำหนด</option></select>
+        <select id="filterStatus" aria-label="กรองตามสถานะ"><option value="all">ทุกสถานะ</option><option value="review">🟡 รอตรวจสอบ</option><option value="progress">🔴 กำลังดำเนินการ</option><option value="closed">🟢 ปิดงานสำเร็จ</option><option value="evaluated">⭐ ปิดงานและประเมินแล้ว</option><option value="unevaluated">☆ ปิดงานแต่ยังไม่ประเมิน</option><option value="overdue">⏰ เกินกำหนด</option></select><small id="dmEvaluationFilterHint" style="font-size:.7rem;color:#64748b"></small>
         <select id="filterCategory" aria-label="กรองตามหมวดหมู่"><option value="all">ทุกหมวดหมู่</option></select>
         <select id="filterType" aria-label="กรองตามประเภท"><option value="all">ทุกประเภท</option><option value="p">แจ้งปัญหา</option><option value="g">ชื่นชม</option></select>
       </div>
@@ -863,6 +869,8 @@ const cats = {
 // ใส่ URL ของ Google Apps Script Web App หลัง Deploy แล้ว
 const DM_API_URL = 'https://script.google.com/macros/s/AKfycbwkvwHQbYb-8b4mq43WFZlBGCRo-QK5kbMRuDlxuOGqpSJSlVNABD9L4d9a6vhPKJDH0Q/exec'; // ตัวอย่าง: https://script.google.com/macros/s/DEPLOYMENT_ID/exec
 let data = []; // Public records are loaded from Sheets; never merge browser data
+let dmEvaluatedTicketIds=new Set();
+let dmEvaluationListLoaded=false;
 let activityLog = [];
 let cloudInitialized = false;
 let syncTimer = null;
@@ -926,6 +934,19 @@ function dmJSONP(action, params={}){
   load();
  });
 }
+async function dmRefreshEvaluatedTickets(){
+  try{
+    const result=await dmJSONP('evaluatedTickets');
+    if(!result?.ok || !Array.isArray(result.ticketIds)) throw Error(result?.error||'ไม่พบข้อมูลผลประเมิน');
+    dmEvaluatedTicketIds=new Set(result.ticketIds.map(String));
+    dmEvaluationListLoaded=true;
+    renderList();
+  }catch(err){
+    console.warn('Evaluation markers unavailable:',err.message);
+    const el=document.getElementById('dmEvaluationFilterHint');
+    if(el)el.textContent='ยังโหลดสถานะประเมินไม่ได้ กรุณาตรวจว่าได้ Deploy Code.gs เวอร์ชันใหม่แล้ว';
+  }
+}
 async function syncNow(){
  if(syncInProgress)return;
  syncInProgress=true;setCloudStatus('กำลังอ่านข้อมูลจาก Google Sheets…');
@@ -933,7 +954,8 @@ async function syncNow(){
   const result=await dmJSONP('publicRecords');
   if(!result||!result.ok||!Array.isArray(result.records))throw Error(result?.error||'ข้อมูลตอบกลับไม่ถูกต้อง — ตรวจเวอร์ชัน Code.gs');
   data=result.records.map((r,i)=>({id:i+1,ticketId:r.ticketId,createdAt:r.createdAt,c:Number(r.category),t:r.type,title:r.title||'รายการ '+r.ticketId,desc:r.detail||'ไม่มีรายละเอียดที่เผยแพร่ได้',location:r.location||'',name:'ไม่เปิดเผย',contact:'-',status:r.status,assignee:'',dueDate:'',resolution:r.resolution||'',closedAt:r.closedAt||'',time:r.createdAt?new Date(r.createdAt).toLocaleString('th-TH'):'',imgs:[],timeline:[],evidence:[],beforeCount:Number(r.beforeCount)||0,afterCount:Number(r.afterCount)||0,evidenceToken:r.evidenceToken||''}));
-  currentListPage=1;renderCatGrid();renderList();await updateDash();dmLoadSatisfactionSummary();
+  currentListPage=1;renderCatGrid();renderList();await updateDash();
+  await Promise.all([dmLoadSatisfactionSummary(),dmRefreshEvaluatedTickets()]);
   setCloudStatus('เชื่อม Google Sheets แล้ว · '+data.length+' รายการ (แสดงเฉพาะข้อมูลที่เปิดเผยได้)',true);
  }catch(e){setCloudStatus('เชื่อมต่อไม่สำเร็จ: '+e.message);throw e;}
  finally{syncInProgress=false;}
@@ -1023,7 +1045,9 @@ function renderCatGrid(){
     const c = document.getElementById('catGrid');
     c.innerHTML = Object.entries(cats).map(([id,obj])=>{
         const cnt = data.filter(x=>x.c==id).length;
-        return `<div class="cat-card" onclick="openForm(${id})"><div class="cat-icon"><img class="dm-category-image" src="${obj.img}" alt="${escapeHTML(obj.n)}" loading="lazy" decoding="async" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><i class="fa-solid ${obj.i}" hidden></i></div><div class="cat-name">${escapeHTML(obj.n)}</div><div class="cat-desc">${cnt} รายการ</div></div>`;
+        const pending = data.filter(x=>x.c==id && x.t==='p' && x.status!=='closed').length;
+        const badge = pending ? `<span class="dm-cat-alert" aria-label="${pending} เรื่องร้องเรียนที่ยังไม่ปิดงาน">${pending>99?'99+':pending}</span>` : '';
+        return `<div class="cat-card" onclick="openForm(${id})"><div class="cat-icon">${badge}<img class="dm-category-image" src="${obj.img}" alt="${escapeHTML(obj.n)}" loading="lazy" decoding="async" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><i class="fa-solid ${obj.i}" hidden></i></div><div class="cat-name">${escapeHTML(obj.n)}</div><div class="cat-desc">${cnt} รายการ</div></div>`;
     }).join('');
     const filter=document.getElementById('filterCategory');
     if(filter && filter.options.length<=1) Object.entries(cats).forEach(([id,obj])=>filter.add(new Option(obj.n,id)));
@@ -1100,6 +1124,8 @@ function getFilteredRecords(){
       if(category!=='all'&&String(r.c)!==category)return false;
       if(type!=='all'&&r.t!==type)return false;
       if(period!=='all'&&!dmReportInPeriod(r.createdAt,period))return false;
+      if(status==='evaluated' && (r.status!=='closed' || !dmEvaluatedTicketIds.has(String(r.ticketId||''))))return false;
+      if(status==='unevaluated' && (r.status!=='closed' || dmEvaluatedTicketIds.has(String(r.ticketId||''))))return false;
       if(status==='overdue'&&!isOverdue(r))return false;
       if(['review','progress','closed'].includes(status)&&(r.status||'review')!==status)return false;
       return true;
@@ -1527,6 +1553,8 @@ function renderList(){
     const pager = document.getElementById('listPagination');
     const filtered = getFilteredRecords();
     if(!filtered.length){
+        const waiting= !dmEvaluationListLoaded && ['evaluated','unevaluated'].includes(document.getElementById('filterStatus')?.value);
+        if(waiting){b.innerHTML='<div class="empty">กำลังโหลดข้อมูลการประเมินจากระบบ…</div>';pager.style.display='none';return;}
         b.innerHTML = `<div class="empty"><i class="fa-solid fa-inbox"></i><p>${data.length?'ไม่พบรายการที่ตรงกับตัวกรอง':'ยังไม่มีข้อมูล — เป็นคนแรกได้เลยครับ!'}</p></div>`;
         pager.style.display = 'none';
         return;
@@ -1814,6 +1842,9 @@ window.addEventListener('DOMContentLoaded',async()=>{
   try{await syncNow();}catch(e){console.warn('DM public connection:',e.message);}
   setTimeout(()=>[catPieChart,typePieChart,monthlyChart].forEach(chart=>{if(chart)chart.resize();}),250);
 });
+// Keep red category badges and evaluated filters current while the page stays open.
+setInterval(()=>{if(!document.hidden && !syncInProgress)syncNow().catch(()=>{});},60000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden && !syncInProgress)syncNow().catch(()=>{});});
 window.addEventListener('resize',()=>{
   clearTimeout(window.__dmChartResizeTimer);
   window.__dmChartResizeTimer=setTimeout(()=>[catPieChart,typePieChart,monthlyChart].forEach(chart=>{if(chart)chart.resize();}),180);
@@ -1846,7 +1877,7 @@ function dmOpenSatisfaction(ticketId){document.getElementById('dmSatForm').reset
 function dmCloseSatisfaction(){document.getElementById('dmSatisfactionSection').classList.remove('dm-survey-visible');document.body.style.overflow='';}
 function dmSetStars(n){document.getElementById('dmSatRating').value=n||'';document.getElementById('dmStarLabel').textContent=['แตะดาวเพื่อให้คะแนน','ไม่พอใจมาก','ไม่พอใจ','ปานกลาง','พอใจ','พอใจมาก'][n];document.querySelectorAll('.dm-star-picker button').forEach(b=>{b.textContent=Number(b.dataset.star)<=n?'★':'☆';b.setAttribute('aria-pressed',String(Number(b.dataset.star)===n));});}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')dmCloseSatisfaction();});
-(function(){document.querySelectorAll('.dm-star-picker button').forEach(b=>b.addEventListener('click',()=>dmSetStars(Number(b.dataset.star))));const form=document.getElementById('dmSatForm'),msg=document.getElementById('dmSatMsg');form.addEventListener('submit',async e=>{e.preventDefault();const rating=Number(document.getElementById('dmSatRating').value);if(!rating){msg.textContent='กรุณาเลือกดาว';return;}const btn=document.getElementById('dmSatSubmit');btn.disabled=true;msg.textContent='กำลังบันทึก...';try{const nonce=dmNonce(),reason=document.getElementById('dmSatReason').value,extra=document.getElementById('dmSatComment').value.trim(),payload={ticketId:document.getElementById('dmSatId').value.trim(),rating,resolved:reason==='ยังแก้ไขปัญหาไม่เรียบร้อย'?'no':'yes',speed:reason==='ดำเนินการล่าช้า'?'slow':'normal',comment:[reason,extra].filter(Boolean).join(' — ').slice(0,1000)};await fetch(DM_API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'submitSatisfaction',nonce,payload})});let receipt;for(let i=0;i<12;i++){await new Promise(r=>setTimeout(r,1500));const x=await dmJSONP('receipt',{nonce});if(x?.ok&&!x.pending){receipt=x;break;}if(x&&!x.ok)throw Error(x.error||'ไม่สำเร็จ');}if(!receipt)throw Error('ยังยืนยันผลไม่ได้ โปรดอย่าส่งซ้ำ');msg.textContent='ขอบคุณสำหรับการประเมิน';if(typeof dmLoadSatisfactionSummary==='function')dmLoadSatisfactionSummary();setTimeout(dmCloseSatisfaction,1200);}catch(err){msg.textContent='ไม่สามารถบันทึก: '+err.message;}finally{btn.disabled=false;}});})();
+(function(){document.querySelectorAll('.dm-star-picker button').forEach(b=>b.addEventListener('click',()=>dmSetStars(Number(b.dataset.star))));const form=document.getElementById('dmSatForm'),msg=document.getElementById('dmSatMsg');form.addEventListener('submit',async e=>{e.preventDefault();const rating=Number(document.getElementById('dmSatRating').value);if(!rating){msg.textContent='กรุณาเลือกดาว';return;}const btn=document.getElementById('dmSatSubmit');btn.disabled=true;msg.textContent='กำลังบันทึก...';try{const nonce=dmNonce(),reason=document.getElementById('dmSatReason').value,extra=document.getElementById('dmSatComment').value.trim(),payload={ticketId:document.getElementById('dmSatId').value.trim(),rating,resolved:reason==='ยังแก้ไขปัญหาไม่เรียบร้อย'?'no':'yes',speed:reason==='ดำเนินการล่าช้า'?'slow':'normal',comment:[reason,extra].filter(Boolean).join(' — ').slice(0,1000)};await fetch(DM_API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'submitSatisfaction',nonce,payload})});let receipt;for(let i=0;i<12;i++){await new Promise(r=>setTimeout(r,1500));const x=await dmJSONP('receipt',{nonce});if(x?.ok&&!x.pending){receipt=x;break;}if(x&&!x.ok)throw Error(x.error||'ไม่สำเร็จ');}if(!receipt)throw Error('ยังยืนยันผลไม่ได้ โปรดอย่าส่งซ้ำ');msg.textContent='ขอบคุณสำหรับการประเมิน';if(typeof dmLoadSatisfactionSummary==='function')dmLoadSatisfactionSummary();dmRefreshEvaluatedTickets();setTimeout(dmCloseSatisfaction,1200);}catch(err){msg.textContent='ไม่สามารถบันทึก: '+err.message;}finally{btn.disabled=false;}});})();
 </script>
 
 <div id="dmEvidenceModal" role="dialog" aria-modal="true" aria-label="ภาพหลักฐาน" onclick="if(event.target===this)dmCloseEvidence()">
