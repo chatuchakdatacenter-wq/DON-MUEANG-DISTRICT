@@ -457,6 +457,7 @@
 @media(max-width:980px){.dm-report-grid{grid-template-columns:1fr}.dm-report-canvas{height:230px}}
 @media(max-width:600px){.dm-report-panel{padding:.8rem}.dm-report-controls{width:100%}.dm-report-controls select{flex:1;min-width:130px}}
 .dm-public-detail{background:#f8fafc;border:1px solid #dbeafe;border-radius:12px;padding:.75rem .9rem;margin:.7rem 0}.dm-public-detail summary{cursor:pointer;font-weight:700;color:#1d4ed8}.dm-public-detail[open] summary{margin-bottom:.5rem}
+.dm-edit-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(75px,1fr));gap:8px;margin:8px 0}.dm-edit-photo{position:relative;aspect-ratio:1}.dm-edit-photo img{width:100%;height:100%;object-fit:cover;border-radius:10px}.dm-edit-photo button{position:absolute;right:2px;top:2px;border:0;border-radius:50%;background:#b91c1c;color:white;width:24px;height:24px;cursor:pointer}
 </style>
 
 <style id="dm-unified-staff-style">
@@ -467,6 +468,27 @@
 #dmStaffFrame{flex:1;width:100%;border:0;background:white}
 #dmStaffHint{font:13px Sarabun,sans-serif;color:#475569;background:#e2e8f0;padding:6px 14px}
 @media(max-width:600px){#dmStaffTop{flex-wrap:wrap;padding:8px}#dmStaffTop strong{width:100%}}
+</style>
+<style id="dm-map-thumbnail-fix">
+.dm-location-map[hidden]{display:none!important}.dm-location-map{margin-top:12px;border:1px solid #dbeafe;border-radius:14px;overflow:hidden;background:#f8fafc}
+.dm-location-map iframe{display:block;width:100%;height:230px;border:0}.dm-location-map a{display:block;padding:10px 13px;color:#1d4ed8;font-weight:700;text-decoration:none}
+#pGrid{grid-template-columns:repeat(auto-fill,minmax(68px,88px));gap:9px}
+#pGrid .p-item{width:100%;aspect-ratio:1/1;cursor:zoom-in}
+#pGrid .p-item img{width:100%;height:100%;object-fit:contain;background:#f1f5f9;cursor:zoom-in}
+.list-imgs{grid-template-columns:repeat(auto-fill,minmax(72px,94px));gap:8px}
+.list-imgs img{width:100%;height:78px;object-fit:contain;background:#f1f5f9;cursor:zoom-in}
+.lb img{max-width:min(96vw,1200px);max-height:88vh;width:auto;height:auto;object-fit:contain}
+@media(max-width:600px){.dm-location-map iframe{height:200px}#pGrid{grid-template-columns:repeat(auto-fill,minmax(65px,78px))}.list-imgs{grid-template-columns:repeat(auto-fill,minmax(65px,82px))}.list-imgs img{height:70px}}
+</style>
+<style id="dm-ticket-preview-v3">
+.dm-ticket-map{display:block;width:min(100%,330px);height:145px;border:1px solid #dbeafe;border-radius:13px;overflow:hidden;position:relative;margin:9px 0;background:#eef4ff}
+.dm-ticket-map iframe{width:100%;height:100%;border:0;pointer-events:none}.dm-ticket-map .dm-map-cover{position:absolute;inset:0;display:flex;align-items:flex-end;padding:8px;text-decoration:none;background:linear-gradient(transparent 60%,#0007);color:white;font-size:12px;font-weight:700}
+.dm-ticket-evidence-preview{position:relative;width:min(100%,330px);height:130px;border:1px solid #dbeafe;border-radius:12px;overflow:hidden;background:#f1f5f9;margin:8px 0;cursor:pointer;display:block}
+.dm-ticket-evidence-preview iframe{width:660px;height:520px;transform:scale(.5);transform-origin:top left;border:0;pointer-events:none;background:#fff}
+.dm-ticket-evidence-preview span{position:absolute;bottom:0;left:0;right:0;background:#0f172acc;color:white;padding:5px 9px;font-size:12px;text-align:center}
+.dm-ticket-edit{display:inline-flex;gap:6px;align-items:center;padding:7px 12px;border:1px solid #bfdbfe;border-radius:10px;background:#eff6ff;color:#1d4ed8;font-weight:700;cursor:pointer;margin-top:8px}
+.dm-edit-overlay{position:fixed;inset:0;z-index:2147483500;background:#0f172acc;display:none;align-items:center;justify-content:center;padding:14px}.dm-edit-overlay.show{display:flex}
+.dm-edit-panel{width:min(560px,100%);max-height:90vh;overflow:auto;background:white;border-radius:18px;padding:22px;box-shadow:0 20px 70px #0005}.dm-edit-panel label{margin-top:12px}.dm-edit-panel input,.dm-edit-panel textarea,.dm-edit-panel select{width:100%}.dm-edit-actions{display:flex;gap:10px;margin-top:15px;justify-content:flex-end}.dm-edit-actions button{padding:10px 15px;border:0;border-radius:10px;cursor:pointer;background:#e2e8f0}.dm-edit-actions button[type=submit]{background:#1d4ed8;color:#fff}
 </style>
 </head>
 <body>
@@ -590,7 +612,7 @@
                     <input type="text" id="location" placeholder="กดปุ่มเพื่อดึงพิกัดอัตโนมัติ หรือพิมพ์เอง">
                     <button type="button" class="loc-btn" id="btnLoc"><i class="fa-solid fa-location-dot"></i> ดึงตำแหน่ง</button>
                 </div>
-                <p class="loc-hint">พิกัดจะแสดงในรูปแบบ ละติจูด, ลองจิจูด · กดเพื่อเปิดแผนที่</p>
+                <p class="loc-hint">แสดงชื่อสถานที่เมื่อค้นหาได้ และเก็บพิกัดสำหรับนำทาง</p><div id="dmLocationMap" class="dm-location-map" hidden><iframe id="dmLocationFrame" title="แผนที่จุดแจ้งเรื่อง" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe><a id="dmLocationLink" target="_blank" rel="noopener noreferrer">📍 เปิดตำแหน่งใน Google Maps</a></div>
             </div>
             <div class="f-group">
                 <label>แนบรูปภาพประกอบคำร้อง (สูงสุด 3 รูป)</label><p class="loc-hint">ระบบจะย่อรูปก่อนส่งและเก็บหลักฐานใน Google Drive เฉพาะเจ้าหน้าที่</p>
@@ -1263,6 +1285,7 @@ function openForm(catId){
     document.getElementById('editIdx').value = '-1';
     updateTicketPreview();
     document.getElementById('location').value = '';
+    document.getElementById('dmLocationMap').hidden = true;
     document.getElementById('btnLoc').classList.remove('active');
     renderPics();
     document.getElementById('dmCategoryGuide').hidden = true;
@@ -1278,20 +1301,41 @@ function closeForm(){
     updateTicketPreview();
 }
 
+function dmLocationParts(value){
+    const v=String(value||'').trim();
+    const m=v.match(/(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)\s*$/);
+    return m?{label:v.slice(0,m.index).replace(/[|\s]+$/,'').trim(),lat:m[1],lng:m[2]}:null;
+}
+function dmRefreshLocationMap(){
+    const v=document.getElementById('location').value.trim(), box=document.getElementById('dmLocationMap');
+    const p=dmLocationParts(v);
+    if(!p){box.hidden=true;return;}
+    const q=p.lat+','+p.lng;
+    document.getElementById('dmLocationFrame').src='https://maps.google.com/maps?q='+encodeURIComponent(q)+'&z=17&output=embed';
+    document.getElementById('dmLocationLink').href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q);
+    box.hidden=false;
+}
+document.getElementById('location').addEventListener('change',dmRefreshLocationMap);
 document.getElementById('btnLoc').addEventListener('click',()=>{
-    const btn = document.getElementById('btnLoc'), locInput = document.getElementById('location');
-    if(!navigator.geolocation){ alert('เบราว์เซอร์ไม่รองรับตำแหน่ง'); return; }
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังค้นหา...';
-    navigator.geolocation.getCurrentPosition(
-        pos=>{
-            const lat = pos.coords.latitude.toFixed(6), lng = pos.coords.longitude.toFixed(6);
-            locInput.value = `${lat}, ${lng}`;
-            btn.innerHTML = '<i class="fa-solid fa-check"></i> ได้แล้ว';
-            btn.classList.add('active');
-        },
-        err=>{ alert('ไม่สามารถดึงตำแหน่งได้: ' + err.message); btn.innerHTML = '<i class="fa-solid fa-location-dot"></i> ดึงตำแหน่ง'; },
-        {enableHighAccuracy:true,timeout:10000,maximumAge:0}
-    );
+    const btn=document.getElementById('btnLoc'), input=document.getElementById('location');
+    if(!navigator.geolocation){alert('เบราว์เซอร์ไม่รองรับตำแหน่ง');return;}
+    btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> กำลังค้นหา...';
+    navigator.geolocation.getCurrentPosition(async pos=>{
+        const lat=pos.coords.latitude.toFixed(6),lng=pos.coords.longitude.toFixed(6);
+        input.value='ตำแหน่งที่แจ้งเรื่อง | '+lat+', '+lng;
+        dmRefreshLocationMap();
+        btn.innerHTML='<i class="fa-solid fa-check"></i> ได้ตำแหน่งแล้ว';btn.classList.add('active');
+        try{
+            const url='https://nominatim.openstreetmap.org/reverse?format=jsonv2&accept-language=th&zoom=18&lat='+lat+'&lon='+lng;
+            const res=await fetch(url,{headers:{Accept:'application/json'}});
+            if(!res.ok)throw Error('Geocoding unavailable');
+            const json=await res.json();
+            if(json.display_name && input.value.endsWith(lat+', '+lng)){
+                input.value=json.display_name+' | '+lat+', '+lng;
+            }
+        }catch(e){ /* ใช้พิกัดจริงต่อได้ แม้บริการแปลงชื่อสถานที่ไม่ตอบกลับ */ }
+    },err=>{alert('ไม่สามารถดึงตำแหน่งได้: '+err.message);btn.innerHTML='<i class="fa-solid fa-location-dot"></i> ดึงตำแหน่ง';},
+    {enableHighAccuracy:true,timeout:12000,maximumAge:0});
 });
 
 async function startCam(){
@@ -1449,12 +1493,13 @@ function renderList(){
     b.innerHTML = pageItems.map(({record:d,index:idx})=>{
         const isP = d.t === 'p';
         const rawLocation = String(d.location || '').trim();
-        const coordMatch = rawLocation.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
+        const coordMatch = rawLocation.match(/(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)\s*$/);
+        const locationLabel = coordMatch ? (rawLocation.slice(0,coordMatch.index).replace(/[|\s]+$/,'').trim() || 'ตำแหน่งที่แจ้งเรื่อง') : rawLocation;
         const mapUrl = coordMatch
             ? `https://www.google.com/maps?q=${encodeURIComponent(coordMatch[1]+','+coordMatch[2])}`
             : ( /^https?:\/\//i.test(rawLocation) ? rawLocation : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(rawLocation)}` );
         const locHtml = rawLocation && rawLocation !== '-'
-            ? `<div class="list-loc"><i class="fa-solid fa-location-dot"></i><span><strong>พิกัด / Location:</strong> </span><a href="${escapeHTML(mapUrl)}" target="_blank" rel="noopener noreferrer">${escapeHTML(rawLocation)}</a><a href="${escapeHTML(mapUrl)}" target="_blank" rel="noopener noreferrer" aria-label="เปิดตำแหน่งใน Google Maps" title="เปิดใน Google Maps"><i class="fa-solid fa-arrow-up-right-from-square"></i> เปิดแผนที่</a></div>`
+            ? `<div class="list-loc"><i class="fa-solid fa-location-dot"></i><span>${escapeHTML(locationLabel)}</span></div><div class="dm-ticket-map"><iframe title="แผนที่ย่อ จุดแจ้งเรื่อง" loading="lazy" referrerpolicy="no-referrer" src="https://maps.google.com/maps?q=${encodeURIComponent(coordMatch ? coordMatch[1]+','+coordMatch[2] : rawLocation)}&z=17&output=embed"></iframe><a class="dm-map-cover" href="${escapeHTML(mapUrl)}" target="_blank" rel="noopener noreferrer" aria-label="เปิดแผนที่ใหญ่"><i class="fa-solid fa-location-dot"></i>&nbsp; แตะเพื่อเปิด Google Maps ขนาดใหญ่ ↗</a></div>`
             : '';
         const imgsHtml = d.imgs?.length
             ? `<div class="list-imgs">${d.imgs.map(src=>`<img src="${src}" loading="lazy" onclick="openLB('${src}')">`).join('')}</div>`
@@ -1462,7 +1507,7 @@ function renderList(){
         const ticketId=d.ticketId||makeTicketId(d.id);
         const beforeCount=Number(d.beforeCount)||0, afterCount=Number(d.afterCount)||0;
         const evidenceHtml=(beforeCount||afterCount)
-            ? `<div class="dm-evidence-summary"><span class="dm-evidence-chip"><i class="fa-regular fa-image"></i> ภาพประกอบ ${beforeCount} รูป</span>${afterCount?`<span class="dm-evidence-chip after">ภาพหลังดำเนินการ ${afterCount} รูป</span>`:''}</div><button type="button" class="dm-evidence-btn" onclick="dmOpenEvidence('${escapeHTML(ticketId)}','${escapeHTML(d.evidenceToken||'')}')"><i class="fa-solid fa-images"></i> เปิดดูรูปภาพ</button>`
+            ? `<div class="dm-evidence-summary"><span class="dm-evidence-chip">ภาพประกอบ ${beforeCount} รูป</span>${afterCount?`<span class="dm-evidence-chip after">ภาพหลังดำเนินการ ${afterCount} รูป</span>`:''}</div><button type="button" class="dm-ticket-evidence-preview" onclick="dmOpenEvidence('${escapeHTML(ticketId)}','${escapeHTML(d.evidenceToken||'')}')" aria-label="ขยายรูปภาพ"><iframe tabindex="-1" loading="lazy" title="ตัวอย่างรูปภาพ" src="${escapeHTML(DM_API_URL+'?action=evidenceView&ticketId='+encodeURIComponent(ticketId)+'&token='+encodeURIComponent(d.evidenceToken||'')+'&view=all')}"></iframe><span>🔍 กดเพื่อขยายรูปภาพ</span></button>`
             : '';
         const late=isOverdue(d);
         const dueHtml=d.dueDate?`<span class="ticket-chip ${late?'late':(d.status==='closed'?'ok':'')}"><i class="fa-solid fa-calendar"></i> กำหนด ${formatDate(d.dueDate)}${late?' · เกินกำหนด':''}</span>`:'';
@@ -1491,7 +1536,7 @@ function renderList(){
             <div class="ticket-meta"><span class="ticket-chip"><i class="fa-solid fa-ticket"></i> ${escapeHTML(ticketId)}</span><span class="ticket-chip"><i class="fa-solid fa-calendar-plus"></i> รับเรื่อง ${formatDate(d.createdAt||d.id)}</span>${dueHtml}${assignHtml}</div>
             <div class="list-title">${escapeHTML(d.title)}</div>
             <details class="dm-public-detail"><summary><i class="fa-solid fa-circle-info"></i> ดูรายละเอียด / ติดตามสถานะ</summary><div class="list-desc" style="margin-top:.7rem">${escapeHTML(d.desc)}</div>${d.resolution?`<div class="ops-note"><strong>ผลการดำเนินงาน:</strong> ${escapeHTML(d.resolution)}</div>`:''}<div style="color:#64748b;font-size:.8rem;margin-top:.5rem">สถานะปัจจุบัน: ${escapeHTML(statusMeta.label)}</div></details>
-            ${evidenceHtml}${locHtml}${imgsHtml}
+            ${evidenceHtml}${locHtml}${imgsHtml}<button type="button" class="dm-ticket-edit" onclick="dmOpenTicketEdit('${escapeHTML(ticketId)}')"><i class="fa-solid fa-pen-to-square"></i> Edit คำร้อง (User / Admin)</button>
 
             ${workflowHtml}
             <div class="list-foot">
@@ -1562,6 +1607,7 @@ window.editRec = function(idx){
     document.getElementById('topic').value = d.title;
     document.getElementById('detail').value = d.desc;
     document.getElementById('location').value = d.location === '-' ? '' : d.location;
+    dmRefreshLocationMap();
     document.getElementById('name').value = d.name === 'ไม่เปิดเผย' ? '' : d.name;
     document.getElementById('contact').value = d.contact === '-' ? '' : d.contact;
     pics = d.imgs || [];
@@ -1885,5 +1931,64 @@ document.getElementById('dmAdminCloseForm').addEventListener('submit',async func
  }catch(err){msg.textContent=err.message;}finally{btn.disabled=false;f.elements.password.value='';}
 });
 </script>
+
+<div id="dmEditOverlay" class="dm-edit-overlay" role="dialog" aria-modal="true" aria-label="แก้ไขคำร้อง">
+<form id="dmEditForm" class="dm-edit-panel">
+<h3>✏️ แก้ไขคำร้อง <span id="dmEditTicketLabel"></span></h3>
+<p style="font-size:13px;color:#64748b">ผู้แจ้งต้องใช้รหัสส่วนตัวที่ได้รับตอนส่งเรื่อง ส่วน Admin ใช้รหัสที่ตรวจสอบโดยเซิร์ฟเวอร์</p>
+<label for="dmEditRole">สิทธิ์ผู้แก้ไข</label><select id="dmEditRole"><option value="user">User (เจ้าของคำร้อง)</option><option value="admin">Admin</option></select>
+<label for="dmEditUsername" id="dmEditUsernameLabel" style="display:none">ชื่อผู้ใช้ Admin</label><input id="dmEditUsername" style="display:none" autocomplete="username"><label for="dmEditSecret">รหัสยืนยันสิทธิ์</label><input id="dmEditSecret" type="password" autocomplete="off" required>
+<label for="dmEditTitle">หัวข้อ</label><input id="dmEditTitle" required maxlength="250">
+<label for="dmEditDetail">รายละเอียด</label><textarea id="dmEditDetail" rows="4" required></textarea>
+<label for="dmEditLocation">สถานที่ / Location</label><input id="dmEditLocation">
+<label for="dmEditPhotos">เพิ่มรูปประกอบคำร้อง (สูงสุด 3 รูปต่อคำร้อง)</label>
+<input id="dmEditPhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple style="display:block;width:100%">
+<div id="dmEditPhotoPreview" class="dm-edit-photo-grid"></div>
+<p style="font-size:12px;color:#64748b">รูปเดิมจะยังอยู่ รูปที่เลือกใหม่จะเพิ่มต่อท้าย (รวมไม่เกิน 3 รูปก่อนดำเนินการ)</p>
+<p id="dmEditMessage" style="font-size:13px;color:#b91c1c;margin-top:8px" role="status"></p>
+<div class="dm-edit-actions"><button type="button" onclick="document.getElementById('dmEditOverlay').classList.remove('show')">ยกเลิก</button><button type="submit" id="dmEditSave">บันทึกการแก้ไข</button></div>
+</form></div>
+<script>
+let dmEditTicketId='';let dmEditNewImages=[];
+const dmEditRoleEl=document.getElementById('dmEditRole');
+dmEditRoleEl.addEventListener('change',()=>{const a=dmEditRoleEl.value==='admin';document.getElementById('dmEditUsername').style.display=a?'block':'none';document.getElementById('dmEditUsernameLabel').style.display=a?'block':'none';document.getElementById('dmEditSecret').value=a?'':(localStorage.getItem('dmSurvey_'+dmEditTicketId)||'');});
+function dmRenderEditPhotos(){document.getElementById('dmEditPhotoPreview').innerHTML=dmEditNewImages.map((src,i)=>`<div class="dm-edit-photo"><img src="${src}" alt="ภาพใหม่ ${i+1}"><button type="button" onclick="dmEditNewImages.splice(${i},1);dmRenderEditPhotos()" aria-label="ลบภาพ">×</button></div>`).join('');}
+document.getElementById('dmEditPhotos').addEventListener('change',async function(){const msg=document.getElementById('dmEditMessage');try{const files=[...this.files];if(files.length+dmEditNewImages.length>3)throw Error('เลือกรูปใหม่ได้ไม่เกิน 3 รูป');const urls=await Promise.all(files.map(f=>new Promise((resolve,reject)=>{if(!/^image\/(jpeg|png|webp)$/.test(f.type)){reject(Error('รองรับ JPEG, PNG, WebP'));return;}const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('อ่านภาพไม่สำเร็จ'));reader.readAsDataURL(f);})));const compressed=await dmCompressImages(urls);dmEditNewImages.push(...compressed);dmRenderEditPhotos();msg.textContent='';}catch(e){msg.textContent=e.message;}finally{this.value='';}});
+
+function dmOpenTicketEdit(ticketId){
+ const r=data.find(x=>x.ticketId===ticketId);if(!r)return;
+ dmEditTicketId=ticketId;dmEditNewImages=[];dmRenderEditPhotos();
+ document.getElementById('dmEditTicketLabel').textContent=ticketId;
+ document.getElementById('dmEditTitle').value=r.title||'';
+ document.getElementById('dmEditDetail').value=r.desc||'';
+ document.getElementById('dmEditLocation').value=r.location||'';
+ document.getElementById('dmEditRole').value='user';document.getElementById('dmEditUsername').style.display='none';document.getElementById('dmEditUsernameLabel').style.display='none';
+ document.getElementById('dmEditSecret').value=localStorage.getItem('dmSurvey_'+ticketId)||'';
+ document.getElementById('dmEditMessage').textContent='';
+ document.getElementById('dmEditOverlay').classList.add('show');
+}
+document.getElementById('dmEditForm').addEventListener('submit',async e=>{
+ e.preventDefault();
+ const btn=document.getElementById('dmEditSave'),msg=document.getElementById('dmEditMessage');
+ const payload={ticketId:dmEditTicketId,role:document.getElementById('dmEditRole').value,token:document.getElementById('dmEditSecret').value,title:document.getElementById('dmEditTitle').value.trim(),detail:document.getElementById('dmEditDetail').value.trim(),location:document.getElementById('dmEditLocation').value.trim(),username:document.getElementById('dmEditUsername').value.trim(),images:dmEditNewImages};
+ if(!payload.token){msg.textContent='กรุณาระบุรหัสยืนยันสิทธิ์';return;}if(payload.role==='admin'&&!payload.username){msg.textContent='กรุณาระบุชื่อผู้ใช้ Admin';return;}
+ btn.disabled=true;msg.textContent='กำลังส่งคำขอแก้ไขเพื่อให้เซิร์ฟเวอร์ตรวจสอบสิทธิ์...';
+ try{
+  const nonce=dmNonce();
+  await fetch(DM_API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'updateTicket',nonce,payload})});
+  let receipt=null;
+  for(let i=0;i<8;i++){
+   await new Promise(r=>setTimeout(r,1500));
+   const result=await dmJSONP('receipt',{nonce});
+   if(result?.ok&&!result.pending){receipt=result;break;}
+   if(result&&!result.ok)throw Error(result.error||'เซิร์ฟเวอร์ไม่อนุญาตให้แก้ไข');
+  }
+  if(!receipt)throw Error('ยังไม่มีการยืนยันจากเซิร์ฟเวอร์ ต้องเพิ่ม action updateTicket และการตรวจสอบสิทธิ์ใน Code.gs ก่อน');
+  msg.textContent='บันทึกสำเร็จ';document.getElementById('dmEditOverlay').classList.remove('show');await syncNow();
+ }catch(err){msg.textContent='ยังไม่บันทึก: '+err.message;}
+ finally{btn.disabled=false;}
+});
+</script>
+
 </body>
 </html>
