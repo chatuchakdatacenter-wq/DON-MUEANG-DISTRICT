@@ -1945,15 +1945,35 @@ document.getElementById('dmAdminCloseForm').addEventListener('submit',async func
 <input id="dmEditPhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple style="display:block;width:100%">
 <div id="dmEditPhotoPreview" class="dm-edit-photo-grid"></div>
 <p style="font-size:12px;color:#64748b">รูปเดิมจะยังอยู่ รูปที่เลือกใหม่จะเพิ่มต่อท้าย (รวมไม่เกิน 3 รูปก่อนดำเนินการ)</p>
+<p style="font-size:11px;color:#64748b">Edit Photos V5.2</p>
 <p id="dmEditMessage" style="font-size:13px;color:#b91c1c;margin-top:8px" role="status"></p>
 <div class="dm-edit-actions"><button type="button" onclick="document.getElementById('dmEditOverlay').classList.remove('show')">ยกเลิก</button><button type="submit" id="dmEditSave">บันทึกการแก้ไข</button></div>
 </form></div>
 <script>
+// V5.2: self-contained image compression for Edit, independent of other scripts.
+async function dmEditCompressPhotos(srcs){
+  if(srcs.length>3) throw Error('เพิ่มรูปได้สูงสุด 3 รูป');
+  const result=[];
+  for(const src of srcs){
+    const img=new Image(); img.src=src;
+    await img.decode();
+    const canvas=document.createElement('canvas');
+    const scale=Math.min(1,960/Math.max(img.naturalWidth,img.naturalHeight));
+    canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
+    canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+    canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+    let quality=.7, encoded=canvas.toDataURL('image/jpeg',quality);
+    while(encoded.length>900000 && quality>.3){quality-=.1;encoded=canvas.toDataURL('image/jpeg',quality);}
+    if(encoded.length>900000) throw Error('รูปภาพใหญ่เกินกำหนด');
+    result.push(encoded);
+  }
+  return result;
+}
 let dmEditTicketId='';let dmEditNewImages=[];
 const dmEditRoleEl=document.getElementById('dmEditRole');
 dmEditRoleEl.addEventListener('change',()=>{const a=dmEditRoleEl.value==='admin';document.getElementById('dmEditUsername').style.display=a?'block':'none';document.getElementById('dmEditUsernameLabel').style.display=a?'block':'none';document.getElementById('dmEditSecret').value=a?'':(localStorage.getItem('dmSurvey_'+dmEditTicketId)||'');});
 function dmRenderEditPhotos(){document.getElementById('dmEditPhotoPreview').innerHTML=dmEditNewImages.map((src,i)=>`<div class="dm-edit-photo"><img src="${src}" alt="ภาพใหม่ ${i+1}"><button type="button" onclick="dmEditNewImages.splice(${i},1);dmRenderEditPhotos()" aria-label="ลบภาพ">×</button></div>`).join('');}
-document.getElementById('dmEditPhotos').addEventListener('change',async function(){const msg=document.getElementById('dmEditMessage');try{const files=[...this.files];if(files.length+dmEditNewImages.length>3)throw Error('เลือกรูปใหม่ได้ไม่เกิน 3 รูป');const urls=await Promise.all(files.map(f=>new Promise((resolve,reject)=>{if(!/^image\/(jpeg|png|webp)$/.test(f.type)){reject(Error('รองรับ JPEG, PNG, WebP'));return;}const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('อ่านภาพไม่สำเร็จ'));reader.readAsDataURL(f);})));const compressed=await dmCompressPublicPics(urls);dmEditNewImages.push(...compressed);dmRenderEditPhotos();msg.textContent='';}catch(e){msg.textContent=e.message;}finally{this.value='';}});
+document.getElementById('dmEditPhotos').addEventListener('change',async function(){const msg=document.getElementById('dmEditMessage');try{const files=[...this.files];if(files.length+dmEditNewImages.length>3)throw Error('เลือกรูปใหม่ได้ไม่เกิน 3 รูป');const urls=await Promise.all(files.map(f=>new Promise((resolve,reject)=>{if(!/^image\/(jpeg|png|webp)$/.test(f.type)){reject(Error('รองรับ JPEG, PNG, WebP'));return;}const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(Error('อ่านภาพไม่สำเร็จ'));reader.readAsDataURL(f);})));const compressed=await dmEditCompressPhotos(urls);dmEditNewImages.push(...compressed);dmRenderEditPhotos();msg.textContent='';}catch(e){msg.textContent=e.message;}finally{this.value='';}});
 
 function dmOpenTicketEdit(ticketId){
  const r=data.find(x=>x.ticketId===ticketId);if(!r)return;
