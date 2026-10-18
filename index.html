@@ -458,6 +458,12 @@
 @media(max-width:600px){.dm-report-panel{padding:.8rem}.dm-report-controls{width:100%}.dm-report-controls select{flex:1;min-width:130px}}
 .dm-public-detail{background:#f8fafc;border:1px solid #dbeafe;border-radius:12px;padding:.75rem .9rem;margin:.7rem 0}.dm-public-detail summary{cursor:pointer;font-weight:700;color:#1d4ed8}.dm-public-detail[open] summary{margin-bottom:.5rem}
 .dm-edit-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(75px,1fr));gap:8px;margin:8px 0}.dm-edit-photo{position:relative;aspect-ratio:1}.dm-edit-photo img{width:100%;height:100%;object-fit:cover;border-radius:10px}.dm-edit-photo button{position:absolute;right:2px;top:2px;border:0;border-radius:50%;background:#b91c1c;color:white;width:24px;height:24px;cursor:pointer}
+
+/* Center category 3D artwork within every card */
+#catGrid .cat-card { text-align:center; display:flex; flex-direction:column; align-items:center; }
+#catGrid .cat-card .cat-icon { margin:0 auto 12px; flex-shrink:0; }
+#catGrid .cat-card .cat-name { width:100%; text-align:center; }
+#catGrid .cat-card .cat-desc { align-self:center; justify-content:center; }
 </style>
 
 <style id="dm-unified-staff-style">
