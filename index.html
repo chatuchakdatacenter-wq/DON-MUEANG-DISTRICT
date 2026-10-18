@@ -537,6 +537,17 @@
 #catGrid .dm-cat-alert{position:absolute;top:-9px;right:-11px;z-index:3;display:flex;align-items:center;justify-content:center;min-width:25px;height:25px;padding:0 6px;border-radius:999px;background:linear-gradient(135deg,#ff334c,#d80d29);border:2px solid #fff;box-shadow:0 3px 9px #be123c5c;color:#fff;font-size:12px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;pointer-events:none}
 #catGrid .dm-cat-alert[hidden]{display:none!important}
 @media(max-width:700px){#catGrid .dm-cat-alert{min-width:23px;height:23px;top:-8px;right:-8px;font-size:11px}}
+</style><style id="dm-layout-balance-20261018">
+/* Balanced category cards and responsive operations filters — 2026-10-18 */
+#catGrid{align-items:stretch;gap:clamp(10px,1.3vw,18px)}
+#catGrid .cat-card{height:100%;min-height:215px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:20px 12px 17px;gap:0}
+#catGrid .cat-icon{flex:0 0 auto;margin:0 auto 10px!important}
+#catGrid .cat-name{min-height:2.9em;display:flex;align-items:center;justify-content:center;margin:0 0 10px;line-height:1.4}
+#catGrid .cat-desc{margin-top:auto!important;min-height:28px;display:inline-flex;align-items:center;justify-content:center}
+.ops-tools{display:grid!important;grid-template-columns:minmax(220px,1.6fr) minmax(200px,1.25fr) minmax(175px,1fr) minmax(150px,.85fr)!important;gap:12px!important;align-items:stretch}
+.ops-tools>input,.ops-tools>select{grid-column:auto!important;min-width:0;width:100%!important;max-width:none!important;height:48px;min-height:48px;margin:0!important}
+@media(max-width:1020px){.ops-tools{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:600px){.ops-tools{grid-template-columns:1fr!important;gap:9px!important}#catGrid .cat-card{min-height:185px;padding:15px 9px 13px}#catGrid .cat-name{font-size:.86rem;min-height:2.8em}#catGrid .cat-desc{min-height:26px}}
 </style></head>
 <body>
 
@@ -720,7 +731,7 @@
       <div class="ops-subtitle">ค้นหาและกรองรายการ (ข้อมูลสาธารณะ ไม่แสดงชื่อ/เบอร์/รายละเอียดส่วนบุคคล)</div>
       <div class="ops-tools">
         <input id="searchRecords" type="search" placeholder="ค้นหาเลขรับเรื่อง..." aria-label="ค้นหารายการ">
-        <select id="filterStatus" aria-label="กรองตามสถานะ"><option value="all">ทุกสถานะ</option><option value="review">🟡 รอตรวจสอบ</option><option value="progress">🔴 กำลังดำเนินการ</option><option value="closed">🟢 ปิดงานสำเร็จ</option><option value="evaluated">⭐ ปิดงานและประเมินแล้ว</option><option value="unevaluated">☆ ปิดงานแต่ยังไม่ประเมิน</option><option value="overdue">⏰ เกินกำหนด</option></select><small id="dmEvaluationFilterHint" style="font-size:.7rem;color:#64748b"></small>
+        <select id="filterStatus" aria-label="กรองตามสถานะ"><option value="all">ทุกสถานะ</option><option value="review">🟡 รอตรวจสอบ</option><option value="progress">🔴 กำลังดำเนินการ</option><option value="closed">🟢 ปิดงานสำเร็จ</option><option value="evaluated">⭐ ปิดงานและประเมินแล้ว</option><option value="unevaluated">☆ ปิดงานแต่ยังไม่ประเมิน</option><option value="overdue">⏰ เกินกำหนด</option></select>
         <select id="filterCategory" aria-label="กรองตามหมวดหมู่"><option value="all">ทุกหมวดหมู่</option></select>
         <select id="filterType" aria-label="กรองตามประเภท"><option value="all">ทุกประเภท</option><option value="p">แจ้งปัญหา</option><option value="g">ชื่นชม</option></select>
       </div>
