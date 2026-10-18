@@ -1569,6 +1569,7 @@ function renderList(){
             ${evidenceHtml}${locHtml}${imgsHtml}<button type="button" class="dm-ticket-edit" onclick="dmOpenTicketEdit('${escapeHTML(ticketId)}')"><i class="fa-solid fa-pen-to-square"></i> Edit คำร้อง (User / Admin)</button><button type="button" class="dm-ticket-edit dm-ticket-delete" onclick="dmOpenTicketDelete('${escapeHTML(ticketId)}')"><i class="fa-solid fa-trash"></i> ลบคำร้อง (Admin)</button>
 
             ${workflowHtml}
+            ${isP && status==='closed' ? `<div class="dm-survey-in-card"><div><strong>⭐ ประเมินผลการแก้ไขเรื่องนี้</strong><p>ปิดงานแล้ว · ผู้แจ้งเรื่องสามารถให้คะแนนและแจ้งว่าปัญหาได้รับการแก้ไขจริงหรือไม่</p></div><button type="button" class="dm-survey-open" onclick="dmOpenSatisfaction('${escapeHTML(ticketId)}')"><i class="fa-solid fa-star"></i> ประเมินผลการแก้ไข</button></div>` : ''}
             <div class="list-foot">
                 <span><i class="fa-solid fa-user-shield"></i> ${escapeHTML(maskReporterName(d.name))} · <i class="fa-solid fa-clock"></i> ${escapeHTML(d.time)}</span>
                 <span class="list-act">
@@ -1787,7 +1788,43 @@ window.addEventListener('orientationchange',()=>{
   setTimeout(()=>[catPieChart,typePieChart,monthlyChart].forEach(chart=>{if(chart)chart.resize();}),350);
 });
 </script>
-<section id="dmSatisfactionSection" style="max-width:820px;margin:30px auto;padding:24px;background:white;border-radius:18px;box-shadow:0 8px 30px #152b4a15;font-family:inherit"><h2 style="margin:0 0 8px">⭐ ประเมินความพึงพอใจหลังปิดงาน</h2><p>สำหรับผู้แจ้งเรื่องที่ได้รับการปิดงานแล้ว ใช้เลขรับเรื่องจากการส่งคำร้องบนอุปกรณ์เดิม หรือกรอกรหัสประเมินที่ได้รับไว้</p><form id="dmSatForm" style="display:grid;gap:12px"><label>เลขรับเรื่อง<input id="dmSatId" required placeholder="DM-20261016-00003" style="display:block;width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></label><label>รหัสประเมินส่วนตัว<input id="dmSatToken" required placeholder="รหัสที่บันทึกไว้เมื่อส่งเรื่อง" style="display:block;width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></label><label>ความพึงพอใจ <select id="dmSatRating" required style="padding:10px"><option value="">เลือกคะแนน</option><option value="5">⭐⭐⭐⭐⭐ มากที่สุด</option><option value="4">⭐⭐⭐⭐ มาก</option><option value="3">⭐⭐⭐ ปานกลาง</option><option value="2">⭐⭐ น้อย</option><option value="1">⭐ น้อยที่สุด</option></select></label><label>ผลการแก้ไข <select id="dmSatResolved"><option value="yes">แก้ไขแล้ว</option><option value="partial">แก้ไขบางส่วน</option><option value="no">ยังไม่ได้รับการแก้ไข (ส่งหัวหน้าพิจารณา)</option></select></label><label>ความรวดเร็ว <select id="dmSatSpeed"><option value="good">รวดเร็วเหมาะสม</option><option value="normal">พอใช้</option><option value="slow">ล่าช้า</option></select></label><label>ข้อเสนอแนะ<textarea id="dmSatComment" maxlength="1000" rows="2" style="display:block;width:100%;border:1px solid #cbd5e1;border-radius:8px"></textarea></label><button id="dmSatSubmit" type="submit" style="background:#1764e8;color:white;border:0;border-radius:10px;padding:12px;cursor:pointer">ส่งผลประเมิน</button><p id="dmSatMsg" role="status"></p></form></section><script>
+<style id="dm-survey-card-style">
+.dm-survey-in-card{margin:14px 0;padding:14px;border:1px solid #bfdbfe;background:linear-gradient(115deg,#eff6ff,#fff);border-radius:15px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.dm-survey-in-card strong{color:#1e40af;font-size:.94rem}.dm-survey-in-card p{font-size:.79rem;color:#64748b;margin-top:4px}
+.dm-survey-open{background:#2563eb;color:white;border:0;border-radius:11px;padding:11px 14px;font:700 .85rem Sarabun,sans-serif;cursor:pointer;white-space:nowrap}
+.dm-survey-open:hover{background:#1d4ed8}
+#dmSatisfactionSection{display:none;position:fixed;inset:0;z-index:2147483400;background:#0f172acc;align-items:center;justify-content:center;padding:12px}
+#dmSatisfactionSection.dm-survey-visible{display:flex}
+.dm-survey-dialog{width:min(580px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:20px;padding:22px;box-shadow:0 20px 80px #0004}
+.dm-survey-top{display:flex;justify-content:space-between;align-items:start;gap:12px}
+.dm-survey-top h2{font-size:1.18rem;color:#1e293b}.dm-survey-top p{font-size:.83rem;color:#64748b;margin:7px 0 15px}
+.dm-survey-close{border:0;border-radius:9px;padding:7px 11px;background:#f1f5f9;cursor:pointer}
+.dm-survey-form{display:grid;gap:12px}.dm-survey-form label{font-size:.87rem}.dm-survey-form input,.dm-survey-form select,.dm-survey-form textarea{width:100%;margin-top:5px}
+#dmSatId{background:#f1f5f9;color:#475569}
+@media(max-width:600px){.dm-survey-in-card{align-items:stretch;flex-direction:column}.dm-survey-open{width:100%}.dm-survey-dialog{padding:16px}}
+</style>
+<section id="dmSatisfactionSection" role="dialog" aria-modal="true" aria-labelledby="dmSurveyTitle" onclick="if(event.target===this)dmCloseSatisfaction()">
+<div class="dm-survey-dialog">
+<div class="dm-survey-top"><div><h2 id="dmSurveyTitle">⭐ ประเมินผลการแก้ไขปัญหา</h2><p>สำหรับผู้แจ้งเรื่องที่ปิดงานแล้ว กรุณาตรวจสอบภาพก่อนและหลังดำเนินการ แล้วให้คะแนนตามความเป็นจริง</p></div><button class="dm-survey-close" type="button" onclick="dmCloseSatisfaction()" aria-label="ปิดหน้าประเมิน">✕</button></div>
+<form id="dmSatForm" class="dm-survey-form"><label>เลขรับเรื่อง<input id="dmSatId" readonly required placeholder="DM-20261016-00003" style="display:block;width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></label><label>รหัสประเมินส่วนตัว<input id="dmSatToken" required placeholder="รหัสที่บันทึกไว้เมื่อส่งเรื่อง" style="display:block;width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px"></label><label>ความพึงพอใจ <select id="dmSatRating" required style="padding:10px"><option value="">เลือกคะแนน</option><option value="5">⭐⭐⭐⭐⭐ มากที่สุด</option><option value="4">⭐⭐⭐⭐ มาก</option><option value="3">⭐⭐⭐ ปานกลาง</option><option value="2">⭐⭐ น้อย</option><option value="1">⭐ น้อยที่สุด</option></select></label><label>ผลการแก้ไข <select id="dmSatResolved"><option value="yes">แก้ไขแล้ว</option><option value="partial">แก้ไขบางส่วน</option><option value="no">ยังไม่ได้รับการแก้ไข (ส่งหัวหน้าพิจารณา)</option></select></label><label>ความรวดเร็ว <select id="dmSatSpeed"><option value="good">รวดเร็วเหมาะสม</option><option value="normal">พอใช้</option><option value="slow">ล่าช้า</option></select></label><label>ข้อเสนอแนะ<textarea id="dmSatComment" maxlength="1000" rows="2" style="display:block;width:100%;border:1px solid #cbd5e1;border-radius:8px"></textarea></label><button id="dmSatSubmit" type="submit" style="background:#1764e8;color:white;border:0;border-radius:10px;padding:12px;cursor:pointer">ส่งผลประเมิน</button><p id="dmSatMsg" role="status"></p></form>
+<p style="font-size:.76rem;color:#64748b;margin-top:12px">ใช้รหัสประเมินส่วนตัวที่ได้รับตอนแจ้งเรื่อง ระบบอนุญาตให้ประเมินได้หนึ่งครั้งต่อคำร้อง</p>
+</div></section>
+<script>
+function dmOpenSatisfaction(ticketId){
+ const modal=document.getElementById('dmSatisfactionSection');
+ const id=document.getElementById('dmSatId'),token=document.getElementById('dmSatToken');
+ document.getElementById('dmSatMsg').textContent='';
+ id.value=ticketId;
+ try{token.value=localStorage.getItem('dmSurvey_'+ticketId)||'';}catch(_){token.value='';}
+ modal.classList.add('dm-survey-visible');
+ document.body.style.overflow='hidden';
+ (token.value?document.getElementById('dmSatRating'):token).focus();
+}
+function dmCloseSatisfaction(){
+ document.getElementById('dmSatisfactionSection').classList.remove('dm-survey-visible');
+ document.body.style.overflow='';
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('dmSatisfactionSection').classList.contains('dm-survey-visible'))dmCloseSatisfaction();});
 (function(){const form=document.getElementById('dmSatForm'),id=document.getElementById('dmSatId'),token=document.getElementById('dmSatToken'),msg=document.getElementById('dmSatMsg');id.addEventListener('change',()=>{try{token.value=localStorage.getItem('dmSurvey_'+id.value.trim())||token.value;}catch(_){}});form.addEventListener('submit',async e=>{e.preventDefault();const btn=document.getElementById('dmSatSubmit');btn.disabled=true;msg.textContent='กำลังบันทึกผลประเมิน...';try{const nonce=dmNonce(),payload={ticketId:id.value.trim(),token:token.value.trim(),rating:Number(document.getElementById('dmSatRating').value),resolved:document.getElementById('dmSatResolved').value,speed:document.getElementById('dmSatSpeed').value,comment:document.getElementById('dmSatComment').value};await fetch(DM_API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'submitSatisfaction',nonce,payload})});let receipt;for(let i=0;i<12;i++){await new Promise(r=>setTimeout(r,1500));const x=await dmJSONP('receipt',{nonce});if(x?.ok&&!x.pending){receipt=x;break;}if(x&&!x.ok)throw Error(x.error||'ไม่สำเร็จ');}if(!receipt)throw Error('ยังยืนยันผลไม่ได้ โปรดอย่าส่งซ้ำ');msg.textContent='ขอบคุณสำหรับการประเมิน ระบบบันทึกแล้ว';form.reset();}catch(err){msg.textContent='ไม่สามารถบันทึก: '+err.message;}finally{btn.disabled=false;}});})();
 </script>
 
