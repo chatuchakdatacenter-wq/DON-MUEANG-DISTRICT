@@ -727,6 +727,12 @@
   <p class="dm-report-note" id="dmReportSummary">นับตามวันที่รับเรื่องจาก Google Sheets · ใช้เวลาในประเทศไทย</p>
 </section>
 
+<section class="dm-report-panel" aria-label="สรุปความพึงพอใจหลังปิดงาน" id="dmSatisfactionDashboard">
+ <div class="dm-report-head"><h2>⭐ ผลประเมินการแก้ไขปัญหาจากประชาชน</h2><button class="ops-btn" type="button" onclick="dmLoadSatisfactionSummary()">↻ อัปเดตคะแนน</button></div>
+ <div class="dm-sat-stats"><div><small>คะแนนเฉลี่ย</small><strong id="dmSatAverage">—</strong><span>เต็ม 5 คะแนน</span></div><div><small>จำนวนผู้ประเมิน</small><strong id="dmSatTotal">0</strong><span>คำร้อง</span></div><div><small>แก้ไขแล้ว</small><strong id="dmSatYes">0</strong><span>คำร้อง</span></div><div><small>ต้องตรวจสอบเพิ่มเติม</small><strong id="dmSatNeedReview">0</strong><span>คำร้อง</span></div></div>
+ <p class="dm-report-note" id="dmSatDashboardNote">สรุปเฉพาะคำร้องที่มีผลประเมินจริง ไม่แสดงข้อมูลส่วนบุคคล</p>
+</section>
+<style>.dm-sat-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.dm-sat-stats>div{border:1px solid #e2e8f0;background:#f8fafc;padding:15px;border-radius:14px;display:flex;flex-direction:column;gap:3px}.dm-sat-stats small,.dm-sat-stats span{font-size:.78rem;color:#64748b}.dm-sat-stats strong{font-size:1.8rem;color:#1d4ed8}@media(max-width:700px){.dm-sat-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}</style>
     <h3 class="sec-title"><i class="fa-solid fa-table-list"></i> รายการที่ส่ง</h3>
     <div class="dm-report-controls" style="margin:0 0 .8rem"><label for="dmListPeriod" style="margin:0;align-self:center">แยกรายการตามช่วงเวลา</label><select id="dmListPeriod"><option value="all">ทุกช่วงเวลา</option><option value="today">วันนี้</option><option value="week">สัปดาห์นี้</option><option value="month">เดือนนี้</option></select></div>
     <div id="listBox"></div>
@@ -912,7 +918,7 @@ async function syncNow(){
   const result=await dmJSONP('publicRecords');
   if(!result||!result.ok||!Array.isArray(result.records))throw Error(result?.error||'ข้อมูลตอบกลับไม่ถูกต้อง — ตรวจเวอร์ชัน Code.gs');
   data=result.records.map((r,i)=>({id:i+1,ticketId:r.ticketId,createdAt:r.createdAt,c:Number(r.category),t:r.type,title:r.title||'รายการ '+r.ticketId,desc:r.detail||'ไม่มีรายละเอียดที่เผยแพร่ได้',location:r.location||'',name:'ไม่เปิดเผย',contact:'-',status:r.status,assignee:'',dueDate:'',resolution:r.resolution||'',closedAt:r.closedAt||'',time:r.createdAt?new Date(r.createdAt).toLocaleString('th-TH'):'',imgs:[],timeline:[],evidence:[],beforeCount:Number(r.beforeCount)||0,afterCount:Number(r.afterCount)||0,evidenceToken:r.evidenceToken||''}));
-  currentListPage=1;renderCatGrid();renderList();await updateDash();
+  currentListPage=1;renderCatGrid();renderList();await updateDash();dmLoadSatisfactionSummary();
   setCloudStatus('เชื่อม Google Sheets แล้ว · '+data.length+' รายการ (แสดงเฉพาะข้อมูลที่เปิดเผยได้)',true);
  }catch(e){setCloudStatus('เชื่อมต่อไม่สำเร็จ: '+e.message);throw e;}
  finally{syncInProgress=false;}
@@ -1774,6 +1780,19 @@ window.refreshPresentation=function(){renderPresentation();};
 window.printPresentation=function(){renderPresentation();document.body.classList.add('presentation-print');window.print();setTimeout(()=>document.body.classList.remove('presentation-print'),500);};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closePresentation();});
 
+async function dmLoadSatisfactionSummary(){
+ const note=document.getElementById('dmSatDashboardNote');
+ try{
+  const data=await dmJSONP('satisfactionSummary');
+  if(!data||!data.ok)throw Error(data?.error||'โหลดข้อมูลไม่ได้');
+  const v=data.satisfaction||{};
+  document.getElementById('dmSatAverage').textContent=v.count?Number(v.average||0).toFixed(2):'—';
+  document.getElementById('dmSatTotal').textContent=Number(v.count||0).toLocaleString('th-TH');
+  document.getElementById('dmSatYes').textContent=Number(v.resolved||0).toLocaleString('th-TH');
+  document.getElementById('dmSatNeedReview').textContent=Number(v.pendingSupervisor||0).toLocaleString('th-TH');
+  note.textContent='คะแนนจากผลประเมินจริง '+Number(v.count||0).toLocaleString('th-TH')+' คำร้อง · ไม่แสดงข้อมูลส่วนบุคคล';
+ }catch(e){note.textContent='ยังโหลดคะแนนไม่ได้: '+e.message;}
+}
 window.addEventListener('DOMContentLoaded',async()=>{
   renderCatGrid();renderList();await updateDash();
   document.body.classList.add('loaded');
@@ -1825,7 +1844,7 @@ function dmCloseSatisfaction(){
  document.body.style.overflow='';
 }
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElementById('dmSatisfactionSection').classList.contains('dm-survey-visible'))dmCloseSatisfaction();});
-(function(){const form=document.getElementById('dmSatForm'),id=document.getElementById('dmSatId'),token=document.getElementById('dmSatToken'),msg=document.getElementById('dmSatMsg');id.addEventListener('change',()=>{try{token.value=localStorage.getItem('dmSurvey_'+id.value.trim())||token.value;}catch(_){}});form.addEventListener('submit',async e=>{e.preventDefault();const btn=document.getElementById('dmSatSubmit');btn.disabled=true;msg.textContent='กำลังบันทึกผลประเมิน...';try{const nonce=dmNonce(),payload={ticketId:id.value.trim(),token:token.value.trim(),rating:Number(document.getElementById('dmSatRating').value),resolved:document.getElementById('dmSatResolved').value,speed:document.getElementById('dmSatSpeed').value,comment:document.getElementById('dmSatComment').value};await fetch(DM_API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'submitSatisfaction',nonce,payload})});let receipt;for(let i=0;i<12;i++){await new Promise(r=>setTimeout(r,1500));const x=await dmJSONP('receipt',{nonce});if(x?.ok&&!x.pending){receipt=x;break;}if(x&&!x.ok)throw Error(x.error||'ไม่สำเร็จ');}if(!receipt)throw Error('ยังยืนยันผลไม่ได้ โปรดอย่าส่งซ้ำ');msg.textContent='ขอบคุณสำหรับการประเมิน ระบบบันทึกแล้ว';form.reset();}catch(err){msg.textContent='ไม่สามารถบันทึก: '+err.message;}finally{btn.disabled=false;}});})();
+(function(){const form=document.getElementById('dmSatForm'),id=document.getElementById('dmSatId'),token=document.getElementById('dmSatToken'),msg=document.getElementById('dmSatMsg');id.addEventListener('change',()=>{try{token.value=localStorage.getItem('dmSurvey_'+id.value.trim())||token.value;}catch(_){}});form.addEventListener('submit',async e=>{e.preventDefault();const btn=document.getElementById('dmSatSubmit');btn.disabled=true;msg.textContent='กำลังบันทึกผลประเมิน...';try{const nonce=dmNonce(),payload={ticketId:id.value.trim(),token:token.value.trim(),rating:Number(document.getElementById('dmSatRating').value),resolved:document.getElementById('dmSatResolved').value,speed:document.getElementById('dmSatSpeed').value,comment:document.getElementById('dmSatComment').value};await fetch(DM_API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'submitSatisfaction',nonce,payload})});let receipt;for(let i=0;i<12;i++){await new Promise(r=>setTimeout(r,1500));const x=await dmJSONP('receipt',{nonce});if(x?.ok&&!x.pending){receipt=x;break;}if(x&&!x.ok)throw Error(x.error||'ไม่สำเร็จ');}if(!receipt)throw Error('ยังยืนยันผลไม่ได้ โปรดอย่าส่งซ้ำ');msg.textContent='ขอบคุณสำหรับการประเมิน ระบบบันทึกแล้ว';dmLoadSatisfactionSummary();form.reset();}catch(err){msg.textContent='ไม่สามารถบันทึก: '+err.message;}finally{btn.disabled=false;}});})();
 </script>
 
 <div id="dmEvidenceModal" role="dialog" aria-modal="true" aria-label="ภาพหลักฐาน" onclick="if(event.target===this)dmCloseEvidence()">
