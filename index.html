@@ -490,6 +490,18 @@
 .dm-edit-overlay{position:fixed;inset:0;z-index:2147483500;background:#0f172acc;display:none;align-items:center;justify-content:center;padding:14px}.dm-edit-overlay.show{display:flex}
 .dm-edit-panel{width:min(560px,100%);max-height:90vh;overflow:auto;background:white;border-radius:18px;padding:22px;box-shadow:0 20px 70px #0005}.dm-edit-panel label{margin-top:12px}.dm-edit-panel input,.dm-edit-panel textarea,.dm-edit-panel select{width:100%}.dm-edit-actions{display:flex;gap:10px;margin-top:15px;justify-content:flex-end}.dm-edit-actions button{padding:10px 15px;border:0;border-radius:10px;cursor:pointer;background:#e2e8f0}.dm-edit-actions button[type=submit]{background:#1d4ed8;color:#fff}
 </style>
+
+<style id="dm-before-after-comparison-v5-3">
+.dm-comparison-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}
+.dm-comparison-panel{min-width:0;border:1px solid #dbeafe;background:#f8fafc;border-radius:13px;overflow:hidden}
+.dm-comparison-heading{padding:10px 9px;font-size:13px;font-weight:800;color:#1e40af;background:#eff6ff;line-height:1.4}
+.dm-comparison-heading span{color:#64748b;font-weight:500}
+.dm-comparison-open{display:block;width:100%;padding:0;border:0;background:#fff;position:relative;cursor:zoom-in;text-align:center}
+.dm-comparison-open iframe{display:block;width:100%;height:auto;aspect-ratio:4/3;border:0;pointer-events:none;background:#f1f5f9}
+.dm-comparison-open>span{display:block;font-size:12px;color:#1d4ed8;font-weight:700;padding:8px}
+.dm-comparison-empty{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:13px}
+@media(max-width:500px){.dm-comparison-grid{gap:7px}.dm-comparison-heading{font-size:11px;padding:8px 5px}.dm-comparison-open iframe,.dm-comparison-empty{aspect-ratio:4/3}.dm-comparison-open>span{font-size:10px}}
+</style>
 </head>
 <body>
 
@@ -1506,9 +1518,12 @@ function renderList(){
             : '';
         const ticketId=d.ticketId||makeTicketId(d.id);
         const beforeCount=Number(d.beforeCount)||0, afterCount=Number(d.afterCount)||0;
+        const evidenceUrl=(kind)=>DM_API_URL+'?action=evidenceView&ticketId='+encodeURIComponent(ticketId)+'&token='+encodeURIComponent(d.evidenceToken||'')+'&kind='+kind+'&view=thumb';
+        const evidencePanel=(kind,label,count)=>`<div class="dm-comparison-panel"><div class="dm-comparison-heading">${label} <span>(${count} รูป)</span></div>${count?`<button type="button" class="dm-comparison-open" onclick="dmOpenEvidenceKind('${escapeHTML(ticketId)}','${escapeHTML(d.evidenceToken||'')}','${kind}')" aria-label="เปิด${label}ขนาดใหญ่"><iframe tabindex="-1" loading="lazy" title="${label}" src="${escapeHTML(evidenceUrl(kind))}"></iframe><span>🔍 กดดูภาพขนาดใหญ่</span></button>`:`<div class="dm-comparison-empty">ยังไม่มีภาพ</div>`}</div>`;
         const evidenceHtml=(beforeCount||afterCount)
-            ? `<div class="dm-evidence-summary"><span class="dm-evidence-chip">ภาพประกอบ ${beforeCount} รูป</span>${afterCount?`<span class="dm-evidence-chip after">ภาพหลังดำเนินการ ${afterCount} รูป</span>`:''}</div><button type="button" class="dm-ticket-evidence-preview" onclick="dmOpenEvidence('${escapeHTML(ticketId)}','${escapeHTML(d.evidenceToken||'')}')" aria-label="ขยายรูปภาพ"><iframe tabindex="-1" loading="lazy" title="ตัวอย่างรูปภาพ" src="${escapeHTML(DM_API_URL+'?action=evidenceView&ticketId='+encodeURIComponent(ticketId)+'&token='+encodeURIComponent(d.evidenceToken||'')+'&view=all')}"></iframe><span>🔍 กดเพื่อขยายรูปภาพ</span></button>`
+            ? `<div class="dm-comparison-grid">${evidencePanel('before','ภาพตัวอย่างประกอบ Before',beforeCount)}${evidencePanel('after','ภาพตัวอย่างประกอบ After',afterCount)}</div>`
             : '';
+
         const late=isOverdue(d);
         const dueHtml=d.dueDate?`<span class="ticket-chip ${late?'late':(d.status==='closed'?'ok':'')}"><i class="fa-solid fa-calendar"></i> กำหนด ${formatDate(d.dueDate)}${late?' · เกินกำหนด':''}</span>`:'';
         const assignHtml=d.assignee?`<span class="ticket-chip"><i class="fa-solid fa-user-check"></i> ${escapeHTML(d.assignee)}</span>`:'';
@@ -1812,6 +1827,10 @@ function dmCloseStaff(){document.getElementById('dmStaffOverlay').classList.remo
  </form>
 </div>
 <script>
+function dmOpenEvidenceKind(ticketId,token,kind){
+ const url=DM_API_URL+'?action=evidenceView&ticketId='+encodeURIComponent(ticketId)+'&token='+encodeURIComponent(token)+'&kind='+encodeURIComponent(kind);
+ window.open(url,'_blank','noopener,noreferrer');
+}
 function dmOpenEvidence(ticketId,token){
  const modal=document.getElementById('dmEvidenceModal'),frame=document.getElementById('dmEvidenceFrame'),title=document.getElementById('dmEvidenceTitle');
  if(!modal||!frame)return;
